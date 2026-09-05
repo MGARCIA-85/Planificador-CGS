@@ -1,9 +1,10 @@
 {
+  "id": "/Planificador-CGS/",
   "name": "Planificador CGS",
   "short_name": "Planificador",
   "description": "Planificación de visitas a clientes por semana",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/Planificador-CGS/index.html",
+  "scope": "/Planificador-CGS/",
   "display": "standalone",
   "background_color": "#E9EEF0",
   "theme_color": "#16262B",
