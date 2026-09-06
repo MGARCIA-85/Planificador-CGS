@@ -438,6 +438,7 @@ const COLUMN_MAP = {
   'nombre':'nombre',
   'id cliente':'idCliente','idcliente':'idCliente',
   'contacto':'contacto',
+  'prioridad':'prioridad',
   'teléfono':'telefono','telefono':'telefono',
   'dirección':'direccion','direccion':'direccion',
   'departamento':'departamento',
@@ -619,7 +620,7 @@ function renderClientSection(){
         <input type="checkbox" ${state.selected.has(id)?'checked':''}>
         <div class="client-info">
           <div class="cname">${c.nombre||'(sin nombre)'}</div>
-          <div class="cmeta">${[c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
+          <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
         </div>
       `;
       row.querySelector('input').onchange = (e)=>{
@@ -720,7 +721,7 @@ function renderVisitList(){
     card.innerHTML = `
       <div>
         <div class="vname">${c.nombre||'(sin nombre)'}</div>
-        <div class="vmeta">${[c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
+        <div class="vmeta">${[c.prioridad, c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
         <span class="vroute" style="background:${rutaColor(c.ruta)}22;color:${rutaColor(c.ruta)}">${c.ruta||'Sin ruta'}</span>
       </div>
       <button class="remove-btn">Quitar</button>
