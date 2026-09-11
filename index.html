@@ -58,6 +58,7 @@
     z-index:15;
     scrollbar-width:none;
   }
+  .week-strip.hidden{display:none;}
   .week-strip::-webkit-scrollbar{display:none;}
   .week-pill{
     flex:0 0 auto;
@@ -76,6 +77,17 @@
     font-weight:600;
   }
   .week-pill.add{color:var(--accent);border-style:dashed;}
+  .week-pill .edit-pencil{margin-left:6px;opacity:0.85;}
+  .week-name-input{
+    border:none;
+    background:transparent;
+    color:inherit;
+    font-size:13.5px;
+    font-weight:600;
+    width:90px;
+    outline:none;
+    border-bottom:1px solid currentColor;
+  }
 
   main{padding:12px 16px 24px;}
   section{margin-bottom:18px;}
@@ -88,7 +100,7 @@
     align-items:center;
   }
 
-  /* Client list */
+  /* Client list (Clientes tab) */
   .search-row{
     display:flex;
     gap:8px;
@@ -102,6 +114,58 @@
     background:var(--surface);
     font-size:14px;
     color:var(--ink);
+  }
+  .simple-list{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:4px;
+  }
+  .simple-row{
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .simple-row:last-child{border-bottom:none;}
+  .priority-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--surface);
+  }
+  .priority-row:first-child{border-top-left-radius:var(--radius);border-top-right-radius:var(--radius);}
+  .priority-row:last-child{border-bottom:none;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius);}
+  .priority-row .prio-chip{width:10px;height:10px;border-radius:3px;flex:0 0 auto;}
+  .priority-row .prio-label{flex:1;font-size:13.5px;font-weight:600;}
+  .priority-row .prio-arrows{display:flex;gap:4px;}
+  .priority-row .prio-arrows button{
+    background:none;border:1px solid var(--line);border-radius:6px;
+    color:var(--muted);font-size:13px;padding:4px 9px;
+  }
+  .priority-row .prio-arrows button:disabled{opacity:0.3;}
+  #listaPrioridad{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .filter-bar{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .filter-bar select{
+    font-size:12.5px;
+    padding:9px 8px;
+  }
+  #weekFilterSection{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:10px 12px 12px;
   }
   .ruta-group{
     background:var(--surface);
@@ -147,82 +211,199 @@
     border-bottom:1px solid var(--line);
   }
   .client-row:last-child{border-bottom:none;}
-  .client-row input[type=checkbox]{width:18px;height:18px;flex:0 0 auto;}
+  .client-row.pickable{cursor:pointer;}
+  .client-row.pickable:active{background:var(--bg);}
   .client-info .cname{font-size:13.5px;font-weight:600;}
   .client-info .cmeta{font-size:11.5px;color:var(--muted);margin-top:1px;}
 
-  /* Day tickets */
+  /* Day cards (Programación tab) */
   .tickets{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:1fr 1fr;
     gap:10px;
   }
+  .ticket.ticket-expanded{
+    grid-column:1 / -1;
+  }
   .ticket{
+    min-width:0;
+    position:relative;
     background:var(--surface);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:10px 12px;
-    position:relative;
-    min-height:74px;
-    text-align:left;
+    padding:12px 14px;
   }
-  .ticket::after{
-    content:"";
-    position:absolute;
-    right:-7px;top:50%;
-    width:14px;height:14px;
-    background:var(--bg);
-    border:1px solid var(--line);
-    border-radius:50%;
-    transform:translateY(-50%);
+  .ticket-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:2px;
   }
-  .ticket:nth-child(even)::after{display:none;}
-  .ticket .day-name{
+  .ticket-head .day-name{
     font-family:Georgia,serif;
     font-weight:700;
-    font-size:14.5px;
+    font-size:15.5px;
   }
-  .ticket .day-route{
+  .ticket-head .day-actions button{
+    background:none;border:none;color:var(--muted);
+    font-size:13px;padding:4px 6px;
+  }
+  .ticket-head .day-actions button.trash{color:var(--danger);}
+  .day-name-input{
+    font-family:Georgia,serif;
+    font-weight:700;
+    font-size:15.5px;
+    border:none;
+    border-bottom:1px solid var(--accent);
+    background:transparent;
+    outline:none;
+    padding:0;
+    color:var(--ink);
+    flex:1;
+    margin-right:8px;
+  }
+  .day-route{
     font-size:11.5px;
     color:var(--muted);
-    margin-top:3px;
-    min-height:14px;
+    margin-bottom:6px;
+    cursor:pointer;
   }
-  .ticket .day-count{
+  .day-route.unset{color:var(--accent);font-weight:600;}
+  #routeConfigPanel{
+    background:var(--surface);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    padding:10px;
+    margin-top:12px;
+  }
+  #routeConfigPanel .picker-title{font-size:13px;font-weight:700;margin-bottom:8px;}
+  .day-fill-count{
     font-size:11px;
     color:var(--warm);
     font-weight:700;
-    margin-top:6px;
+    margin-bottom:6px;
   }
-  .ticket.has-selection{
-    border-color:var(--accent);
-    box-shadow:0 0 0 1px var(--accent) inset;
+  .ticket.collapsed{
+    aspect-ratio:1 / 1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    cursor:pointer;
+    padding:10px 12px;
+  }
+  .ticket.collapsed .expand-hint{
+    position:absolute;
+    top:6px;right:8px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .ticket.collapsed .collapsed-title{
+    font-family:Georgia,serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding-right:14px;
+  }
+  .ticket.collapsed .collapsed-route{
+    font-size:10px;
+    color:var(--muted);
+    margin-top:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .ticket.collapsed .collapsed-count{
+    font-size:10.5px;
+    color:var(--warm);
+    font-weight:700;
+    margin:4px 0 3px;
+  }
+  .ticket.collapsed .collapsed-list{
+    font-size:10.5px;
+    line-height:1.45;
+    color:var(--ink);
+    overflow:hidden;
+    flex:1;
+  }
+  .ticket.collapsed .collapsed-list div{
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .slot-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 2px;
+    border-bottom:1px solid var(--line);
+  }
+  .slot-row:last-child{border-bottom:none;}
+  .slot-num{
+    width:16px;
+    flex:0 0 auto;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+    text-align:right;
+  }
+  .slot-name{
+    flex:1;
+    font-size:13.5px;
+    font-weight:600;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .slot-empty{
+    flex:1;
+    min-height:18px;
+    border-bottom:1px dashed var(--line);
+  }
+  .slot-remove{
+    background:none;border:none;color:var(--danger);
+    font-size:16px;line-height:1;padding:2px 6px;flex:0 0 auto;
+  }
+  .add-day-card{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+    min-height:52px;
+    color:var(--accent);
+    font-size:13.5px;
+    font-weight:600;
+    background:none;
+    width:100%;
   }
 
-  .selection-bar{
-    position:fixed;
-    left:0;right:0;
-    bottom:calc(58px + var(--safe-bottom));
-    background:var(--ink);
-    color:#fff;
-    padding:10px 16px;
-    display:none;
-    align-items:center;
-    justify-content:space-between;
-    font-size:13px;
-    z-index:25;
-  }
-  .selection-bar.show{display:flex;}
-  .selection-bar button{
-    background:var(--accent);
-    color:#fff;
-    border:none;
-    padding:8px 14px;
+  /* Desplegable inline dentro de la tarjeta (como una celda de Excel) */
+  .inline-picker{
+    background:#F4F7F6;
+    border:1px solid var(--accent);
     border-radius:8px;
-    font-size:13px;
-    font-weight:600;
+    padding:8px;
+    margin:4px 0 8px;
   }
-  .selection-bar .clear{background:none;color:#B7C4C1;padding:8px 4px;}
+  .inline-picker .search-row{margin-bottom:6px;}
+  .inline-picker .client-list-flat{max-height:260px;overflow-y:auto;}
+  #inlinePickerNote{
+    font-size:11px;
+    color:var(--accent);
+    background:#E4EFE8;
+    padding:5px 7px;
+    border-radius:6px;
+    margin-bottom:6px;
+  }
+  #inlinePickerNote button{
+    background:none;border:none;color:var(--accent);
+    font-weight:700;font-size:11px;padding:0 0 0 4px;
+    text-decoration:underline;
+  }
+  .picker-actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:6px;
+  }
 
   /* Calendar view */
   .day-tabs{
@@ -254,6 +435,9 @@
     justify-content:space-between;
     align-items:flex-start;
     gap:10px;
+  }
+  .visit-card .vnum{
+    font-size:11px;color:var(--muted);font-weight:700;margin-right:6px;
   }
   .visit-card .vname{font-weight:600;font-size:14px;}
   .visit-card .vmeta{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;}
@@ -359,9 +543,8 @@
 <div class="week-strip" id="weekStrip"></div>
 
 <main>
-  <!-- VISTA: PROGRAMACIÓN -->
-  <div class="view active" id="view-programacion">
-
+  <!-- VISTA: CLIENTES -->
+  <div class="view active" id="view-clientes">
     <section id="importSection" style="display:none;">
       <div class="import-box">
         Aún no has importado tu lista de clientes.
@@ -374,41 +557,106 @@
     <section id="clientSection" style="display:none;">
       <div class="section-title">
         <span>Clientes</span>
-        <button class="btn-mini" onclick="document.getElementById('fileInput').click()">Reimportar</button>
+        <button class="btn-mini" onclick="document.getElementById('fileInput2').click()">Reimportar</button>
         <input type="file" id="fileInput2" accept=".xlsx,.xls" style="display:none;">
       </div>
       <div class="search-row">
         <input type="text" id="searchInput" placeholder="Buscar cliente...">
       </div>
+      <div class="search-row">
+        <select id="groupSelect">
+          <option value="ruta">Agrupar por: Ruta</option>
+          <option value="departamento">Agrupar por: Departamento</option>
+          <option value="municipio">Agrupar por: Municipio (Sector)</option>
+        </select>
+        <select id="sortSelect">
+          <option value="nombre">Orden: Nombre A-Z</option>
+          <option value="departamento">Orden: Departamento</option>
+          <option value="municipio">Orden: Municipio A-Z</option>
+          <option value="prioridad">Orden: Prioridad</option>
+        </select>
+      </div>
       <div id="rutaGroups"></div>
     </section>
+  </div>
 
-    <section id="ticketsSection" style="display:none;">
-      <div class="section-title"><span>Asignar a un día de esta semana</span></div>
+  <!-- VISTA: PROGRAMACIÓN -->
+  <div class="view" id="view-programacion">
+    <section id="ticketsEmptyState" style="display:none;">
+      <div class="empty-state">Primero importa tus clientes en la pestaña "Clientes".</div>
+    </section>
+    <section id="weekFilterSection" style="display:none;">
+      <div class="section-title">
+        <span>Filtro de clientes para esta semana</span>
+        <button class="btn-mini" id="clearWeekFilterBtn">Quitar filtros</button>
+      </div>
+      <div class="filter-bar">
+        <select id="filterRuta"></select>
+        <select id="filterDepartamento"></select>
+        <select id="filterMunicipio"></select>
+        <select id="filterPrioridad"></select>
+        <select id="filterSort"></select>
+      </div>
+    </section>
+    <section id="ticketsSection">
       <div class="tickets" id="ticketsGrid"></div>
+      <div style="margin-top:12px;">
+        <button class="add-day-card" id="addDayBtn">+ Agregar día</button>
+      </div>
+      <div id="routeConfigPanel" style="display:none;">
+        <div class="picker-title" id="routeConfigTitle">Configurar ruta(s) del día</div>
+        <div id="routeConfigList"></div>
+        <div class="picker-actions">
+          <button class="btn-mini" id="routeConfigCancel">Cancelar</button>
+          <button id="routeConfigSave">Guardar</button>
+        </div>
+      </div>
     </section>
   </div>
 
   <!-- VISTA: CALENDARIO -->
   <div class="view" id="view-calendario">
     <div class="day-tabs" id="dayTabs"></div>
+    <div class="section-title"><span>Visitas del día</span></div>
     <div id="visitList"></div>
+  </div>
+
+  <!-- VISTA: LISTAS DEL SISTEMA -->
+  <div class="view" id="view-listas">
+    <section>
+      <div class="section-title"><span>Rutas</span></div>
+      <div id="listaRutas"></div>
+    </section>
+    <section>
+      <div class="section-title"><span>Departamentos</span></div>
+      <div id="listaDepartamentos"></div>
+    </section>
+    <section>
+      <div class="section-title"><span>Municipios (Sector)</span></div>
+      <div id="listaMunicipios"></div>
+    </section>
+    <section>
+      <div class="section-title"><span>Prioridad</span></div>
+      <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
+        Ordena esta lista a mano con las flechas — así aparecerán los clientes en toda la app cuando ordenes por Prioridad.
+      </div>
+      <div id="listaPrioridad"></div>
+    </section>
   </div>
 </main>
 
-<div class="selection-bar" id="selectionBar">
-  <span id="selectionText">0 seleccionados</span>
-  <div>
-    <button class="clear" onclick="clearSelection()">Limpiar</button>
-  </div>
-</div>
-
 <nav class="tabbar">
-  <button id="tab-programacion" class="active" onclick="switchView('programacion')">
+  <button id="tab-clientes" class="active" onclick="switchView('clientes')">
+    <span class="dot"></span>Clientes
+  </button>
+  <button id="tab-programacion" onclick="switchView('programacion')">
     <span class="dot"></span>Programación
   </button>
   <button id="tab-calendario" onclick="switchView('calendario')">
     <span class="dot"></span>Calendario
+  </button>
+  <button id="tab-listas" onclick="switchView('listas')">
+    <span class="dot"></span>Listas
   </button>
 </nav>
 
@@ -419,11 +667,14 @@
 /* =========================================================
    PLANIFICADOR CGS
    Datos: clientes (importados de Excel) + visitas por semana
+   Cada día tiene 10 casillas numeradas (1-10) para clientes.
    Estructura NO conectada aún a GestorPedidosCGS (pendiente)
    ========================================================= */
 
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
+const LS_PRIORITY_ORDER = 'pcgs_priority_order';
+const SLOTS_PER_DAY = 10;
 
 const DIAS = [
   {key:'martes',  label:'Martes'},
@@ -448,16 +699,39 @@ const COLUMN_MAP = {
 };
 
 const RUTA_COLORS = ['#2F6F4E','#C97A2B','#3E6E88','#7A4E9E','#B3432B','#5B7075','#1F7A6C','#946B2D'];
+const PRIORITY_RANK = ['ESTRATEGICO','ALTA','MEDIA','BAJA','TELEFONO','INACTIVO','BLOQUEADO'];
+
+const PRIORITY_STYLES = {
+  'ESTRATEGICO': { color:'#B8860B' },
+  'ALTA':        { color:'#2F6F4E' },
+  'MEDIA':       { color:'#2F5C8A' },
+  'BAJA':        { color:null },
+  'TELEFONO':    { color:'#7A4E9E' },
+  'INACTIVO':    { color:'#B3432B' },
+  'BLOQUEADO':   { color:'#B3432B', strike:true }
+};
+
+let dayIdCounter = 0;
+function newDayId(){
+  dayIdCounter += 1;
+  return 'd' + Date.now() + '_' + dayIdCounter;
+}
+
+function emptySlots(){ return new Array(SLOTS_PER_DAY).fill(null); }
 
 let state = {
   clientes: [],
-  meses: {},          // { "2026-09": { weeks: [ {label, slots:{martes:[idCliente,...], ...}} ] } }
+  meses: {},          // { "2026-09": { weeks: [ {label, days:[{id,title,clientSlots:[10 x id|null]}]} ] } }
   currentMonthKey: '',
   currentWeekIndex: 0,
-  currentView: 'programacion',
-  currentDayKey: 'martes',
-  selected: new Set(),
-  openRutas: new Set()
+  currentView: 'clientes',
+  currentDayKey: null,
+  openRutas: new Set(),
+  sortMode: 'nombre',
+  groupMode: 'ruta',
+  slotPicker: { open:false, dayId:null, slotIndex:null, openGroups:new Set() },
+  expandedDays: new Set(),
+  priorityOrder: null
 };
 
 function todayMonthKey(){
@@ -471,23 +745,92 @@ function monthLabel(key){
   return nombres[m-1] + ' ' + y;
 }
 
-function rutaColor(ruta){
-  if(!ruta) return '#5B7075';
+function rutaColor(str){
+  if(!str) return '#5B7075';
   let hash = 0;
-  for(let i=0;i<ruta.length;i++) hash = ruta.charCodeAt(i) + ((hash<<5)-hash);
+  for(let i=0;i<str.length;i++) hash = str.charCodeAt(i) + ((hash<<5)-hash);
   return RUTA_COLORS[Math.abs(hash) % RUTA_COLORS.length];
+}
+
+function normalizePriority(p){
+  return (p||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+
+function priorityStyle(p){
+  const style = PRIORITY_STYLES[normalizePriority(p)];
+  if(!style) return '';
+  let css = '';
+  if(style.color) css += `color:${style.color};`;
+  if(style.strike) css += 'text-decoration:line-through;';
+  return css;
 }
 
 function save(){
   localStorage.setItem(LS_CLIENTES, JSON.stringify(state.clientes));
   localStorage.setItem(LS_MESES, JSON.stringify(state.meses));
+  localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
 }
 
 function load(){
   try{ state.clientes = JSON.parse(localStorage.getItem(LS_CLIENTES)) || []; }catch(e){ state.clientes = []; }
   try{ state.meses = JSON.parse(localStorage.getItem(LS_MESES)) || {}; }catch(e){ state.meses = {}; }
+  try{
+    const stored = JSON.parse(localStorage.getItem(LS_PRIORITY_ORDER));
+    const validSet = new Set(PRIORITY_RANK);
+    const isValid = Array.isArray(stored) && stored.length===PRIORITY_RANK.length && stored.every(k=>validSet.has(k));
+    state.priorityOrder = isValid ? stored : PRIORITY_RANK.slice();
+  }catch(e){ state.priorityOrder = PRIORITY_RANK.slice(); }
+  migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
+}
+
+function toClientSlots(ids){
+  const slots = emptySlots();
+  (ids||[]).slice(0, SLOTS_PER_DAY).forEach((id, i)=> slots[i] = id);
+  return slots;
+}
+
+function defaultWeekFilter(){
+  return { ruta:'', departamento:'', municipio:'', prioridad:'', sort:'nombre' };
+}
+
+function migrateOldData(){
+  let migrated = false;
+  Object.values(state.meses).forEach(mes=>{
+    (mes.weeks || []).forEach(week=>{
+      if(!week.days && week.slots){
+        // versión más antigua: slots fijos por clave de día
+        week.days = DIAS.map(d => ({
+          id: newDayId(),
+          title: d.label,
+          rutas: [],
+          clientSlots: toClientSlots(week.slots[d.key])
+        }));
+        delete week.slots;
+        migrated = true;
+      } else if(!week.days){
+        week.days = DIAS.map(d => ({ id:newDayId(), title:d.label, rutas:[], clientSlots: emptySlots() }));
+        migrated = true;
+      }
+      week.days.forEach(day=>{
+        if(!day.clientSlots){
+          day.clientSlots = toClientSlots(day.clientIds);
+          delete day.clientIds;
+          migrated = true;
+        }
+        if(!day.rutas){
+          day.rutas = [];
+          migrated = true;
+        }
+      });
+      if(!week.filtro){
+        week.filtro = defaultWeekFilter();
+        migrated = true;
+      }
+    });
+  });
+  if(migrated) save();
 }
 
 function ensureMonth(key){
@@ -499,8 +842,21 @@ function ensureMonth(key){
 function newWeek(n){
   return {
     label: 'Semana ' + n,
-    slots: { martes:[], miercoles:[], jueves:[], viernes:[], extra:[] }
+    filtro: defaultWeekFilter(),
+    days: DIAS.map(d => ({ id:newDayId(), title:d.label, rutas:[], clientSlots: emptySlots() }))
   };
+}
+
+function ensureCurrentDayKey(){
+  const week = currentWeek();
+  if(!week.days.length){ state.currentDayKey = null; return; }
+  if(!week.days.find(d => d.id === state.currentDayKey)){
+    state.currentDayKey = week.days[0].id;
+  }
+}
+
+function dayById(week, id){
+  return week.days.find(d => d.id === id);
 }
 
 function currentMonth(){
@@ -525,12 +881,25 @@ function renderHeader(){
 
 function renderWeekStrip(){
   const strip = document.getElementById('weekStrip');
+  const hideStrip = state.currentView==='clientes' || state.currentView==='listas';
+  strip.classList.toggle('hidden', hideStrip);
+  if(hideStrip) return;
   strip.innerHTML = '';
   currentMonth().weeks.forEach((w, i)=>{
     const pill = document.createElement('button');
     pill.className = 'week-pill' + (i===state.currentWeekIndex ? ' active':'');
-    pill.textContent = w.label;
-    pill.onclick = ()=>{ state.currentWeekIndex = i; state.selected.clear(); renderAll(); };
+    const isActive = i===state.currentWeekIndex;
+    pill.innerHTML = `<span class="week-name-text">${w.label}</span>` + (isActive ? '<span class="edit-pencil">✎</span>' : '');
+    pill.onclick = (e)=>{
+      if(e.target.classList.contains('edit-pencil') && isActive){
+        startEditWeekName(pill, w);
+        return;
+      }
+      state.currentWeekIndex = i;
+      closeSlotPicker();
+      renderTickets();
+      renderCalendarView();
+    };
     strip.appendChild(pill);
   });
   const addBtn = document.createElement('button');
@@ -541,163 +910,669 @@ function renderWeekStrip(){
     weeks.push(newWeek(weeks.length+1));
     state.currentWeekIndex = weeks.length-1;
     save();
-    renderAll();
+    renderWeekStrip();
+    renderTickets();
+    renderCalendarView();
   };
   strip.appendChild(addBtn);
 }
 
-/* ---------- RENDER: clientes ---------- */
+function startEditWeekName(pill, week){
+  pill.innerHTML = '';
+  const input = document.createElement('input');
+  input.className = 'week-name-input';
+  input.value = week.label;
+  pill.appendChild(input);
+  input.focus();
+  input.select();
+  const commit = ()=>{
+    const v = input.value.trim();
+    if(v) week.label = v;
+    save();
+    renderWeekStrip();
+  };
+  input.onblur = commit;
+  input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); };
+  input.onclick = (e)=> e.stopPropagation();
+}
+
+/* ---------- clientes: helpers compartidos ---------- */
 function clientById(id){
   return state.clientes.find(c => (c.idCliente||c.idSistema) === id);
 }
 
-function groupByRuta(list){
+const GROUP_FIELDS = { ruta:'ruta', departamento:'departamento', municipio:'sector' };
+
+function groupClients(list){
+  const field = GROUP_FIELDS[state.groupMode] || 'ruta';
   const groups = {};
   list.forEach(c=>{
-    const r = c.ruta || 'Sin ruta';
-    if(!groups[r]) groups[r] = [];
-    groups[r].push(c);
+    const key = c[field] || 'Sin dato';
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(c);
   });
   return groups;
 }
 
-function renderClientSection(){
-  const hasClients = state.clientes.length > 0;
-  document.getElementById('importSection').style.display = hasClients ? 'none':'block';
-  document.getElementById('clientSection').style.display = hasClients ? 'block':'none';
-  document.getElementById('ticketsSection').style.display = hasClients ? 'block':'none';
-  if(!hasClients) return;
+function assignedClientIdsThisWeek(){
+  const ids = new Set();
+  currentWeek().days.forEach(d=> d.clientSlots.forEach(id => { if(id) ids.add(id); }));
+  return ids;
+}
 
-  const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+function getAllRoutes(){
+  return [...new Set(state.clientes.map(c=>c.ruta).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function getAllDepartamentos(){
+  return [...new Set(state.clientes.map(c=>c.departamento).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function getAllMunicipios(){
+  return [...new Set(state.clientes.map(c=>c.sector).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+const PRIORITY_LABELS = {
+  ESTRATEGICO:'Estratégico', ALTA:'Alta', MEDIA:'Media', BAJA:'Baja',
+  TELEFONO:'Teléfono', INACTIVO:'Inactivo', BLOQUEADO:'Bloqueado'
+};
+
+function getDepartamentosFor(wf){
+  const pool = state.clientes.filter(c => !wf.ruta || c.ruta===wf.ruta);
+  return [...new Set(pool.map(c=>c.departamento).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function getMunicipiosFor(wf){
+  const pool = state.clientes.filter(c =>
+    (!wf.ruta || c.ruta===wf.ruta) && (!wf.departamento || c.departamento===wf.departamento)
+  );
+  return [...new Set(pool.map(c=>c.sector).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function sortForWeekFilter(list, mode){
+  const arr = list.slice();
+  if(mode==='ruta'){
+    arr.sort((a,b)=> (a.ruta||'').localeCompare(b.ruta||'', 'es'));
+  } else if(mode==='municipio'){
+    arr.sort((a,b)=> (a.sector||'').localeCompare(b.sector||'', 'es'));
+  } else if(mode==='prioridad'){
+    arr.sort((a,b)=>{
+      const ra = state.priorityOrder.indexOf(normalizePriority(a.prioridad));
+      const rb = state.priorityOrder.indexOf(normalizePriority(b.prioridad));
+      return (ra===-1?999:ra) - (rb===-1?999:rb);
+    });
+  } else {
+    arr.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||'', 'es'));
+  }
+  return arr;
+}
+
+function renderWeekFilterBar(){
+  const week = currentWeek();
+  const wf = week.filtro;
+
+  const rutaSel = document.getElementById('filterRuta');
+  const depSel = document.getElementById('filterDepartamento');
+  const munSel = document.getElementById('filterMunicipio');
+  const prioSel = document.getElementById('filterPrioridad');
+  const sortSel = document.getElementById('filterSort');
+
+  const routes = getAllRoutes();
+  const departamentos = getDepartamentosFor(wf);
+  const municipios = getMunicipiosFor(wf);
+
+  rutaSel.innerHTML = `<option value="">Ruta: Todas</option>` +
+    routes.map(r=>`<option value="${r}">${r}</option>`).join('');
+  depSel.innerHTML = `<option value="">Departamento: Todos</option>` +
+    departamentos.map(d=>`<option value="${d}">${d}</option>`).join('');
+  munSel.innerHTML = `<option value="">Municipio: Todos</option>` +
+    municipios.map(m=>`<option value="${m}">${m}</option>`).join('');
+  prioSel.innerHTML = `<option value="">Prioridad: Todas</option>` +
+    Object.keys(PRIORITY_LABELS).map(k=>`<option value="${k}">${PRIORITY_LABELS[k]}</option>`).join('');
+  sortSel.innerHTML = `
+    <option value="nombre">Ordenar por: Nombre A-Z</option>
+    <option value="ruta">Ordenar por: Ruta</option>
+    <option value="municipio">Ordenar por: Sector</option>
+    <option value="prioridad">Ordenar por: Prioridad</option>
+  `;
+
+  rutaSel.value = wf.ruta || '';
+  depSel.value = wf.departamento || '';
+  munSel.value = wf.municipio || '';
+  prioSel.value = wf.prioridad || '';
+  sortSel.value = wf.sort || 'nombre';
+
+  rutaSel.onchange = ()=>{
+    wf.ruta = rutaSel.value;
+    wf.departamento = '';
+    wf.municipio = '';
+    save();
+    renderTickets();
+  };
+  depSel.onchange = ()=>{
+    wf.departamento = depSel.value;
+    wf.municipio = '';
+    save();
+    renderTickets();
+  };
+  munSel.onchange = ()=>{
+    wf.municipio = munSel.value;
+    save();
+    renderTickets();
+  };
+  prioSel.onchange = ()=>{
+    wf.prioridad = prioSel.value;
+    save();
+    renderTickets();
+  };
+  sortSel.onchange = ()=>{
+    wf.sort = sortSel.value;
+    save();
+    renderTickets();
+  };
+  document.getElementById('clearWeekFilterBtn').onclick = ()=>{
+    week.filtro = defaultWeekFilter();
+    save();
+    renderTickets();
+  };
+}
+
+function sortClients(list){
+  const arr = list.slice();
+  const mode = state.sortMode;
+  if(mode === 'departamento'){
+    arr.sort((a,b)=> (a.departamento||'').localeCompare(b.departamento||'', 'es'));
+  } else if(mode === 'municipio'){
+    arr.sort((a,b)=> (a.sector||'').localeCompare(b.sector||'', 'es'));
+  } else if(mode === 'prioridad'){
+    arr.sort((a,b)=>{
+      const ra = state.priorityOrder.indexOf(normalizePriority(a.prioridad));
+      const rb = state.priorityOrder.indexOf(normalizePriority(b.prioridad));
+      return (ra===-1?999:ra) - (rb===-1?999:rb);
+    });
+  } else {
+    arr.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||'', 'es'));
+  }
+  return arr;
+}
+
+/* Lista agrupada reutilizable.
+   opts.mode: 'browse' (solo ver, pestaña Clientes) | 'pick' (tocar fila = elegir, usado en el picker de casillas) */
+function renderClientGroupList(opts){
+  const excludeIds = opts.excludeIds || new Set();
+  const q = opts.query || '';
   const filtered = state.clientes.filter(c=>{
-    if(!query) return true;
-    return (c.nombre||'').toLowerCase().includes(query) ||
-           (c.ruta||'').toLowerCase().includes(query) ||
-           (c.sector||'').toLowerCase().includes(query);
+    const id = c.idCliente || c.idSistema;
+    if(excludeIds.has(id)) return false;
+    if(!q) return true;
+    return (c.nombre||'').toLowerCase().includes(q) ||
+           (c.ruta||'').toLowerCase().includes(q) ||
+           (c.sector||'').toLowerCase().includes(q) ||
+           (c.departamento||'').toLowerCase().includes(q);
   });
-  const groups = groupByRuta(filtered);
-  const wrap = document.getElementById('rutaGroups');
+  const wrap = document.getElementById(opts.wrapId);
   wrap.innerHTML = '';
 
-  Object.keys(groups).sort().forEach(ruta=>{
-    const clients = groups[ruta];
-    const isOpen = state.openRutas.has(ruta) || query.length>0;
+  function buildClientRow(c){
+    const row = document.createElement('div');
+    row.className = 'client-row';
+    row.innerHTML = `
+      <div class="client-info">
+        <div class="cname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
+        <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
+      </div>
+    `;
+    return row;
+  }
+
+  const groups = groupClients(filtered);
+  const keys = Object.keys(groups).sort();
+  if(keys.length===0){
+    wrap.innerHTML = `<div class="empty-state">${opts.emptyMsg || 'No hay clientes disponibles.'}</div>`;
+    return;
+  }
+
+  keys.forEach(key=>{
+    const clients = sortClients(groups[key]);
+    const isOpen = opts.openGroupsSet.has(key) || q.length>0;
     const div = document.createElement('div');
     div.className = 'ruta-group';
 
     const head = document.createElement('div');
     head.className = 'ruta-head';
     head.innerHTML = `
-      <span class="name"><span class="ruta-chip" style="background:${rutaColor(ruta)}"></span>${ruta}
+      <span class="name"><span class="ruta-chip" style="background:${rutaColor(key)}"></span>${key}
         <span class="count">(${clients.length})</span>
       </span>
-      <div class="ruta-actions">
-        <button class="btn-mini" data-action="select-all">Seleccionar todos</button>
-        <span class="icon-btn">${isOpen ? '▾' : '▸'}</span>
-      </div>
+      <span class="icon-btn">${isOpen ? '▾' : '▸'}</span>
     `;
-    head.querySelector('[data-action="select-all"]').onclick = (e)=>{
-      e.stopPropagation();
-      clients.forEach(c=> state.selected.add(c.idCliente||c.idSistema));
-      renderClientSection();
-      renderSelectionBar();
-      renderTickets();
-    };
     head.onclick = ()=>{
-      if(state.openRutas.has(ruta)) state.openRutas.delete(ruta);
-      else state.openRutas.add(ruta);
-      renderClientSection();
+      if(opts.openGroupsSet.has(key)) opts.openGroupsSet.delete(key);
+      else opts.openGroupsSet.add(key);
+      opts.rerender();
     };
     div.appendChild(head);
 
     const list = document.createElement('div');
     list.className = 'client-list' + (isOpen ? ' open':'');
-    clients.forEach(c=>{
-      const id = c.idCliente || c.idSistema;
-      const row = document.createElement('div');
-      row.className = 'client-row';
-      row.innerHTML = `
-        <input type="checkbox" ${state.selected.has(id)?'checked':''}>
-        <div class="client-info">
-          <div class="cname">${c.nombre||'(sin nombre)'}</div>
-          <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
-        </div>
-      `;
-      row.querySelector('input').onchange = (e)=>{
-        if(e.target.checked) state.selected.add(id);
-        else state.selected.delete(id);
-        renderSelectionBar();
-        renderTickets();
-      };
-      list.appendChild(row);
-    });
+    clients.forEach(c=> list.appendChild(buildClientRow(c)));
     div.appendChild(list);
     wrap.appendChild(div);
   });
 }
 
-function renderSelectionBar(){
-  const bar = document.getElementById('selectionBar');
-  const n = state.selected.size;
-  bar.classList.toggle('show', n>0);
-  document.getElementById('selectionText').textContent =
-    n + (n===1 ? ' cliente seleccionado — toca un día para asignar' : ' clientes seleccionados — toca un día para asignar');
+/* ---------- VISTA: CLIENTES ---------- */
+/* ---------- VISTA: LISTAS DEL SISTEMA ---------- */
+function renderListasView(){
+  renderSimpleList('listaRutas', getAllRoutes(), 'No hay rutas todavía — importa tus clientes en la pestaña "Clientes".');
+  renderSimpleList('listaDepartamentos', getAllDepartamentos(), 'No hay departamentos todavía — importa tus clientes en la pestaña "Clientes".');
+  renderSimpleList('listaMunicipios', getAllMunicipios(), 'No hay municipios todavía — importa tus clientes en la pestaña "Clientes".');
+  renderPriorityList();
 }
 
-function clearSelection(){
-  state.selected.clear();
-  renderClientSection();
-  renderSelectionBar();
-  renderTickets();
+function renderSimpleList(wrapId, items, emptyMsg){
+  const wrap = document.getElementById(wrapId);
+  if(items.length===0){
+    wrap.className = '';
+    wrap.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
+    return;
+  }
+  wrap.className = 'simple-list';
+  wrap.innerHTML = items.map(v=>`<div class="simple-row">${v}</div>`).join('');
 }
 
-/* ---------- RENDER: tarjetas de día ---------- */
+function renderPriorityList(){
+  const wrap = document.getElementById('listaPrioridad');
+  wrap.innerHTML = '';
+  state.priorityOrder.forEach((key, idx)=>{
+    const style = PRIORITY_STYLES[key] || {};
+    const row = document.createElement('div');
+    row.className = 'priority-row';
+    row.innerHTML = `
+      <span class="prio-chip" style="background:${style.color || '#9AA5A8'}"></span>
+      <span class="prio-label" style="${style.strike?'text-decoration:line-through;':''}">${PRIORITY_LABELS[key]}</span>
+      <div class="prio-arrows">
+        <button data-dir="up" ${idx===0?'disabled':''} title="Subir">↑</button>
+        <button data-dir="down" ${idx===state.priorityOrder.length-1?'disabled':''} title="Bajar">↓</button>
+      </div>
+    `;
+    row.querySelector('[data-dir="up"]').onclick = ()=> movePriority(idx, -1);
+    row.querySelector('[data-dir="down"]').onclick = ()=> movePriority(idx, 1);
+    wrap.appendChild(row);
+  });
+}
+
+function movePriority(idx, delta){
+  const arr = state.priorityOrder;
+  const newIdx = idx + delta;
+  if(newIdx<0 || newIdx>=arr.length) return;
+  const tmp = arr[idx];
+  arr[idx] = arr[newIdx];
+  arr[newIdx] = tmp;
+  save();
+  renderPriorityList();
+}
+
+function renderClientesView(){
+  const hasClients = state.clientes.length > 0;
+  document.getElementById('importSection').style.display = hasClients ? 'none':'block';
+  document.getElementById('clientSection').style.display = hasClients ? 'block':'none';
+  if(!hasClients) return;
+
+  const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  renderClientGroupList({
+    wrapId: 'rutaGroups',
+    mode: 'browse',
+    query,
+    openGroupsSet: state.openRutas,
+    emptyMsg: 'No se encontraron clientes.',
+    rerender: renderClientesView
+  });
+}
+
+/* ---------- VISTA: PROGRAMACIÓN (tarjetas de día, 10 casillas) ---------- */
 function renderTickets(){
+  const hasClients = state.clientes.length > 0;
+  document.getElementById('ticketsEmptyState').style.display = hasClients ? 'none':'block';
+  document.getElementById('ticketsSection').style.display = hasClients ? 'block':'none';
+  document.getElementById('weekFilterSection').style.display = hasClients ? 'block':'none';
+  if(!hasClients) return;
+
+  renderWeekFilterBar();
+
   const grid = document.getElementById('ticketsGrid');
   grid.innerHTML = '';
   const week = currentWeek();
-  DIAS.forEach(d=>{
-    const ids = week.slots[d.key];
-    const clients = ids.map(clientById).filter(Boolean);
-    const rutas = [...new Set(clients.map(c=>c.ruta).filter(Boolean))];
+  ensureCurrentDayKey();
+
+  week.days.forEach(day=>{
+    const filled = day.clientSlots.filter(Boolean);
+    const dayHasActiveSlot = state.slotPicker.open && state.slotPicker.dayId===day.id;
+    const isExpanded = state.expandedDays.has(day.id) || dayHasActiveSlot;
+
     const div = document.createElement('div');
-    div.className = 'ticket' + (state.selected.size>0 ? ' has-selection':'');
-    div.innerHTML = `
-      <div class="day-name">${d.label}</div>
-      <div class="day-route">${rutas.join(' / ') || '—'}</div>
-      <div class="day-count">${clients.length} visita${clients.length===1?'':'s'}</div>
+
+    if(!isExpanded){
+      div.className = 'ticket collapsed';
+      div.onclick = ()=>{
+        state.expandedDays.add(day.id);
+        renderTickets();
+      };
+
+      const hasRutas = day.rutas && day.rutas.length>0;
+      const names = filled.map(clientById).filter(Boolean).map(c=>c.nombre||'(sin nombre)');
+
+      div.innerHTML = `
+        <span class="expand-hint">⌄</span>
+        <div class="collapsed-title">${day.title}</div>
+        <div class="collapsed-route">${hasRutas ? day.rutas.join(' / ') : 'Sin ruta configurada'}</div>
+        <div class="collapsed-count">${filled.length} / ${SLOTS_PER_DAY} visitas</div>
+        <div class="collapsed-list">
+          ${names.map(n=>`<div>${n}</div>`).join('') || '<div style="color:var(--muted);">Sin clientes aún</div>'}
+        </div>
+      `;
+      grid.appendChild(div);
+      return;
+    }
+
+    div.className = 'ticket ticket-expanded';
+
+    const head = document.createElement('div');
+    head.className = 'ticket-head';
+    head.innerHTML = `
+      <div class="day-name">${day.title}</div>
+      <div class="day-actions">
+        <button class="collapse" title="Colapsar">⌃</button>
+        <button class="edit" title="Renombrar día">✎</button>
+        <button class="trash" title="Eliminar día">🗑</button>
+      </div>
     `;
-    div.onclick = ()=>{
-      if(state.selected.size===0){
-        switchView('calendario');
-        state.currentDayKey = d.key;
-        renderCalendarView();
-        return;
-      }
-      state.selected.forEach(id=>{
-        if(!week.slots[d.key].includes(id)) week.slots[d.key].push(id);
-      });
-      const n = state.selected.size;
-      state.selected.clear();
-      save();
-      renderClientSection();
-      renderSelectionBar();
+    head.querySelector('.collapse').onclick = ()=>{
+      state.expandedDays.delete(day.id);
       renderTickets();
-      toast(n + (n===1?' cliente asignado a ':' clientes asignados a ') + d.label);
     };
+    head.querySelector('.edit').onclick = ()=> startEditDayTitle(head, day);
+    head.querySelector('.trash').onclick = ()=>{
+      const msg = filled.length>0
+        ? `Este día tiene ${filled.length} visita(s) asignada(s). ¿Eliminarlo de todas formas?`
+        : '¿Eliminar este día?';
+      if(!confirm(msg)) return;
+      const idx = week.days.indexOf(day);
+      week.days.splice(idx,1);
+      state.expandedDays.delete(day.id);
+      save();
+      renderTickets();
+    };
+    div.appendChild(head);
+
+    const route = document.createElement('div');
+    const hasRutas = day.rutas && day.rutas.length>0;
+    route.className = 'day-route' + (hasRutas ? '' : ' unset');
+    route.textContent = hasRutas ? day.rutas.join(' / ') : '+ Configurar ruta del día';
+    route.onclick = ()=> openRouteConfig(day);
+    div.appendChild(route);
+
+    const count = document.createElement('div');
+    count.className = 'day-fill-count';
+    count.textContent = `${filled.length} / ${SLOTS_PER_DAY} visitas`;
+    div.appendChild(count);
+
+    let pendingInit = null;
+
+    for(let i=0;i<SLOTS_PER_DAY;i++){
+      const isActive = state.slotPicker.open && state.slotPicker.dayId===day.id && state.slotPicker.slotIndex===i;
+
+      if(isActive){
+        const inline = document.createElement('div');
+        inline.className = 'inline-picker';
+        inline.innerHTML = `
+          <div class="search-row"><input type="text" id="inlinePickerSearch" placeholder="Buscar cliente..."></div>
+          <div id="inlinePickerNote" style="display:none;"></div>
+          <div id="inlinePickerResults" class="client-list-flat"></div>
+          <div class="picker-actions"><button class="btn-mini" id="inlinePickerCancel">Cancelar</button></div>
+        `;
+        div.appendChild(inline);
+        pendingInit = ()=>{
+          document.getElementById('inlinePickerSearch').addEventListener('input', renderInlinePickerResults);
+          document.getElementById('inlinePickerCancel').onclick = ()=>{
+            state.slotPicker.open = false;
+            renderTickets();
+          };
+          renderInlinePickerResults();
+          document.getElementById('inlinePickerSearch').focus();
+        };
+        continue;
+      }
+
+      const clientId = day.clientSlots[i];
+      const row = document.createElement('div');
+      row.className = 'slot-row';
+      if(clientId){
+        const c = clientById(clientId);
+        row.innerHTML = `
+          <span class="slot-num">${i+1}.</span>
+          <span class="slot-name" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
+          <button class="slot-remove" title="Quitar">×</button>
+        `;
+        row.querySelector('.slot-remove').onclick = ()=>{
+          day.clientSlots[i] = null;
+          save();
+          renderTickets();
+        };
+      } else {
+        row.innerHTML = `
+          <span class="slot-num">${i+1}.</span>
+          <span class="slot-empty"></span>
+        `;
+        row.onclick = ()=>{
+          state.slotPicker = { open:true, dayId:day.id, slotIndex:i, routeFilterActive:(day.rutas && day.rutas.length>0) };
+          renderTickets();
+        };
+      }
+      div.appendChild(row);
+    }
+
     grid.appendChild(div);
+    if(pendingInit) pendingInit();
   });
+}
+
+function getEligibleClientsForPicker(query, routeFilter, weekFiltro, excludeIds){
+  const q = (query||'').toLowerCase().trim();
+  const filtered = state.clientes.filter(c=>{
+    const id = c.idCliente || c.idSistema;
+    if(excludeIds.has(id)) return false;
+    if(routeFilter && routeFilter.length>0 && !routeFilter.includes(c.ruta)) return false;
+    if(weekFiltro){
+      if(weekFiltro.ruta && c.ruta!==weekFiltro.ruta) return false;
+      if(weekFiltro.departamento && c.departamento!==weekFiltro.departamento) return false;
+      if(weekFiltro.municipio && c.sector!==weekFiltro.municipio) return false;
+      if(weekFiltro.prioridad && normalizePriority(c.prioridad)!==weekFiltro.prioridad) return false;
+    }
+    if(!q) return true;
+    return (c.nombre||'').toLowerCase().includes(q) ||
+           (c.ruta||'').toLowerCase().includes(q) ||
+           (c.sector||'').toLowerCase().includes(q) ||
+           (c.departamento||'').toLowerCase().includes(q);
+  });
+  return sortForWeekFilter(filtered, weekFiltro ? weekFiltro.sort : 'nombre');
+}
+
+function renderInlinePickerResults(){
+  const week = currentWeek();
+  const day = dayById(week, state.slotPicker.dayId);
+  if(!day) return;
+  const wf = week.filtro;
+  const hasRutas = day.rutas && day.rutas.length>0;
+  const routeFilter = (hasRutas && state.slotPicker.routeFilterActive) ? day.rutas : null;
+  const excludeIds = assignedClientIdsThisWeek();
+  const searchEl = document.getElementById('inlinePickerSearch');
+  const query = searchEl ? searchEl.value : '';
+  const clients = getEligibleClientsForPicker(query, routeFilter, wf, excludeIds);
+
+  const note = document.getElementById('inlinePickerNote');
+  const weekFilterParts = [];
+  if(wf.ruta) weekFilterParts.push(`Ruta: ${wf.ruta}`);
+  if(wf.departamento) weekFilterParts.push(`Depto: ${wf.departamento}`);
+  if(wf.municipio) weekFilterParts.push(`Municipio: ${wf.municipio}`);
+  if(wf.prioridad) weekFilterParts.push(`Prioridad: ${PRIORITY_LABELS[wf.prioridad]}`);
+
+  let noteHtml = '';
+  if(weekFilterParts.length>0){
+    noteHtml += `Filtro de semana: ${weekFilterParts.join(' · ')}<br>`;
+  }
+  if(hasRutas){
+    if(state.slotPicker.routeFilterActive){
+      noteHtml += `Ruta del día: ${day.rutas.join(' / ')} <button id="inlineToggleRoute">Ver sin este filtro</button>`;
+    } else {
+      noteHtml += `Sin filtro de ruta del día <button id="inlineToggleRoute">Filtrar por ${day.rutas.join(' / ')}</button>`;
+    }
+  }
+  if(noteHtml){
+    note.style.display = 'block';
+    note.innerHTML = noteHtml;
+    const toggleBtn = document.getElementById('inlineToggleRoute');
+    if(toggleBtn) toggleBtn.onclick = ()=>{
+      state.slotPicker.routeFilterActive = !state.slotPicker.routeFilterActive;
+      renderInlinePickerResults();
+    };
+  } else {
+    note.style.display = 'none';
+  }
+
+  const results = document.getElementById('inlinePickerResults');
+  results.innerHTML = '';
+  if(clients.length===0){
+    results.innerHTML = `<div class="empty-state">${(routeFilter || weekFilterParts.length>0) ? 'No hay clientes disponibles con estos filtros esta semana.' : 'Todos tus clientes ya están programados esta semana.'}</div>`;
+    return;
+  }
+  clients.forEach(c=>{
+    const row = document.createElement('div');
+    row.className = 'client-row pickable';
+    row.innerHTML = `
+      <div class="client-info">
+        <div class="cname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
+        <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
+      </div>
+    `;
+    row.onclick = ()=>{
+      const id = c.idCliente || c.idSistema;
+      day.clientSlots[state.slotPicker.slotIndex] = id;
+      state.slotPicker.open = false;
+      save();
+      renderTickets();
+      toast(`${c.nombre} agregado a "${day.title}"`);
+    };
+    results.appendChild(row);
+  });
+}
+
+function startEditDayTitle(headEl, day){
+  const nameDiv = headEl.querySelector('.day-name');
+  const input = document.createElement('input');
+  input.className = 'day-name-input';
+  input.value = day.title;
+  nameDiv.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = ()=>{
+    const v = input.value.trim();
+    if(v) day.title = v;
+    save();
+    renderTickets();
+    renderCalendarView();
+  };
+  input.onblur = commit;
+  input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); };
+}
+
+document.getElementById('addDayBtn').onclick = ()=>{
+  const week = currentWeek();
+  const day = { id:newDayId(), title:'Nuevo día', rutas:[], clientSlots: emptySlots() };
+  week.days.push(day);
+  state.expandedDays.add(day.id);
+  save();
+  renderTickets();
+};
+
+/* ---------- Configurar ruta(s) del día ---------- */
+let routeConfigDayId = null;
+let routeConfigTemp = new Set();
+
+function openRouteConfig(day){
+  closeSlotPicker();
+  routeConfigDayId = day.id;
+  routeConfigTemp = new Set(day.rutas);
+  document.getElementById('routeConfigPanel').style.display = 'block';
+  document.getElementById('routeConfigTitle').textContent = `Rutas para "${day.title}"`;
+  renderRouteConfigList();
+  document.getElementById('routeConfigPanel').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function closeRouteConfig(){
+  routeConfigDayId = null;
+  const panel = document.getElementById('routeConfigPanel');
+  if(panel) panel.style.display = 'none';
+}
+
+function renderRouteConfigList(){
+  const routes = getAllRoutes();
+  const wrap = document.getElementById('routeConfigList');
+  wrap.innerHTML = '';
+  if(routes.length===0){
+    wrap.innerHTML = '<div class="empty-state">No hay rutas en tus clientes importados.</div>';
+    return;
+  }
+  routes.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'client-row pickable';
+    row.innerHTML = `
+      <input type="checkbox" ${routeConfigTemp.has(r)?'checked':''} style="width:18px;height:18px;flex:0 0 auto;">
+      <div class="client-info">
+        <div class="cname"><span class="ruta-chip" style="background:${rutaColor(r)};display:inline-block;margin-right:6px;"></span>${r}</div>
+      </div>
+    `;
+    const cb = row.querySelector('input');
+    const toggle = ()=>{
+      cb.checked = !cb.checked;
+      if(cb.checked) routeConfigTemp.add(r); else routeConfigTemp.delete(r);
+    };
+    row.onclick = (e)=>{ if(e.target!==cb){ toggle(); } else { if(cb.checked) routeConfigTemp.add(r); else routeConfigTemp.delete(r); } };
+    wrap.appendChild(row);
+  });
+}
+
+document.getElementById('routeConfigCancel').onclick = closeRouteConfig;
+document.getElementById('routeConfigSave').onclick = ()=>{
+  const week = currentWeek();
+  const day = dayById(week, routeConfigDayId);
+  if(day){
+    day.rutas = Array.from(routeConfigTemp);
+    save();
+    renderTickets();
+  }
+  closeRouteConfig();
+};
+
+/* ---------- Cerrar picker inline al salir/cambiar de contexto ---------- */
+function closeSlotPicker(){
+  if(state.slotPicker.open){
+    state.slotPicker.open = false;
+    renderTickets();
+  }
 }
 
 /* ---------- RENDER: vista calendario ---------- */
 function renderDayTabs(){
   const wrap = document.getElementById('dayTabs');
   wrap.innerHTML = '';
-  DIAS.forEach(d=>{
+  const week = currentWeek();
+  ensureCurrentDayKey();
+  week.days.forEach(d=>{
     const btn = document.createElement('button');
-    btn.className = 'day-tab' + (d.key===state.currentDayKey ? ' active':'');
-    btn.textContent = d.label;
-    btn.onclick = ()=>{ state.currentDayKey = d.key; renderCalendarView(); };
+    btn.className = 'day-tab' + (d.id===state.currentDayKey ? ' active':'');
+    btn.textContent = d.title;
+    btn.onclick = ()=>{ state.currentDayKey = d.id; renderCalendarView(); };
     wrap.appendChild(btn);
   });
 }
@@ -706,30 +1581,36 @@ function renderVisitList(){
   const wrap = document.getElementById('visitList');
   wrap.innerHTML = '';
   const week = currentWeek();
-  const ids = week.slots[state.currentDayKey] || [];
-  const clients = ids.map(clientById).filter(Boolean);
+  ensureCurrentDayKey();
+  const day = dayById(week, state.currentDayKey);
 
-  if(clients.length===0){
+  if(!day){
+    wrap.innerHTML = `<div class="empty-state">Esta semana no tiene días todavía.<br>Ve a "Programación" para agregar uno.</div>`;
+    return;
+  }
+
+  const anyFilled = day.clientSlots.some(Boolean);
+  if(!anyFilled){
     wrap.innerHTML = `<div class="empty-state">Sin visitas asignadas todavía.<br>Ve a "Programación" para agregar clientes a este día.</div>`;
     return;
   }
 
-  clients.forEach(c=>{
-    const id = c.idCliente || c.idSistema;
+  day.clientSlots.forEach((clientId, i)=>{
+    if(!clientId) return;
+    const c = clientById(clientId);
+    if(!c) return;
     const card = document.createElement('div');
     card.className = 'visit-card';
     card.innerHTML = `
       <div>
-        <div class="vname">${c.nombre||'(sin nombre)'}</div>
+        <div class="vname"><span class="vnum">${i+1}.</span><span style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</span></div>
         <div class="vmeta">${[c.prioridad, c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
         <span class="vroute" style="background:${rutaColor(c.ruta)}22;color:${rutaColor(c.ruta)}">${c.ruta||'Sin ruta'}</span>
       </div>
       <button class="remove-btn">Quitar</button>
     `;
     card.querySelector('.remove-btn').onclick = ()=>{
-      const arr = week.slots[state.currentDayKey];
-      const idx = arr.indexOf(id);
-      if(idx>-1) arr.splice(idx,1);
+      day.clientSlots[i] = null;
       save();
       renderVisitList();
       renderTickets();
@@ -746,11 +1627,27 @@ function renderCalendarView(){
 /* ---------- vistas / tabs ---------- */
 function switchView(view){
   state.currentView = view;
+  document.getElementById('view-clientes').classList.toggle('active', view==='clientes');
   document.getElementById('view-programacion').classList.toggle('active', view==='programacion');
   document.getElementById('view-calendario').classList.toggle('active', view==='calendario');
+  document.getElementById('view-listas').classList.toggle('active', view==='listas');
+  document.getElementById('tab-clientes').classList.toggle('active', view==='clientes');
   document.getElementById('tab-programacion').classList.toggle('active', view==='programacion');
   document.getElementById('tab-calendario').classList.toggle('active', view==='calendario');
-  if(view==='calendario') renderCalendarView();
+  document.getElementById('tab-listas').classList.toggle('active', view==='listas');
+  renderWeekStrip();
+  if(view==='clientes'){
+    closeSlotPicker();
+    renderClientesView();
+  } else if(view==='programacion'){
+    renderTickets();
+  } else if(view==='calendario'){
+    closeSlotPicker();
+    renderCalendarView();
+  } else if(view==='listas'){
+    closeSlotPicker();
+    renderListasView();
+  }
 }
 
 /* ---------- importación de Excel ---------- */
@@ -773,7 +1670,8 @@ function handleFile(file){
       }).filter(c => c.nombre);
       state.clientes = clientes;
       save();
-      renderAll();
+      renderClientesView();
+      renderTickets();
       toast(clientes.length + ' clientes importados');
     }catch(err){
       toast('No se pudo leer el archivo. Verifica que sea el Excel correcto.');
@@ -785,20 +1683,23 @@ function handleFile(file){
 
 document.getElementById('fileInput').addEventListener('change', (e)=> handleFile(e.target.files[0]));
 document.getElementById('fileInput2').addEventListener('change', (e)=> handleFile(e.target.files[0]));
-document.getElementById('searchInput').addEventListener('input', renderClientSection);
+document.getElementById('searchInput').addEventListener('input', renderClientesView);
+document.getElementById('groupSelect').addEventListener('change', (e)=>{
+  state.groupMode = e.target.value;
+  state.openRutas.clear();
+  renderClientesView();
+});
+document.getElementById('sortSelect').addEventListener('change', (e)=>{
+  state.sortMode = e.target.value;
+  renderClientesView();
+});
 
 /* ---------- init ---------- */
-function renderAll(){
-  renderHeader();
-  renderWeekStrip();
-  renderClientSection();
-  renderSelectionBar();
-  renderTickets();
-  if(state.currentView==='calendario') renderCalendarView();
-}
-
 load();
-renderAll();
+renderHeader();
+renderWeekStrip();
+renderClientesView();
+renderTickets();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
