@@ -58,6 +58,15 @@
     align-items:center;
     justify-content:space-between;
     gap:10px;
+    flex-wrap:wrap;
+  }
+  .app-header-actions{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    flex:0 0 auto;
+    flex-wrap:wrap;
+    justify-content:flex-end;
   }
   .reorder-toggle-btn{
     flex:0 0 auto;
@@ -65,8 +74,8 @@
     border:1px solid #4A5560;
     color:#EDEFF2;
     border-radius:8px;
-    padding:7px 12px;
-    font-size:12.5px;
+    padding:6px 9px;
+    font-size:11.5px;
     font-weight:600;
     white-space:nowrap;
   }
@@ -75,6 +84,32 @@
     border-color:var(--accent);
     color:#fff;
   }
+  .config-gear-btn{
+    padding:7px 10px;
+    font-size:15px;
+  }
+  .config-menu-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    max-width:360px;
+    margin:0 auto;
+  }
+  .config-menu-btn{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px 12px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .config-menu-icon{font-size:32px;}
+  .config-back-btn{margin-bottom:12px;}
 
   .week-strip-row{
     display:flex;
@@ -85,10 +120,6 @@
     position:sticky;
     top:64px;
     z-index:15;
-  }
-  .week-strip-row #toggleFilterBtn{
-    flex:0 0 auto;
-    white-space:nowrap;
   }
   .week-strip-row.hidden{display:none;}
   .week-strip{
@@ -149,13 +180,6 @@
     font-size:12px;
   }
   #weekFilterSection{margin-bottom:12px;}
-  #toggleFilterBtn{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:7px 12px;
-    font-weight:600;
-  }
   #filterBarWrap{
     background:var(--surface);
     border:1px solid var(--line);
@@ -282,6 +306,64 @@
   }
   #filterMultiPanel #filterMultiList{max-height:240px;overflow-y:auto;}
   #filterMultiPanel .picker-actions{justify-content:space-between;}
+  .rename-dialog-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .rename-dialog{
+    background:var(--surface);
+    border-radius:12px;
+    padding:16px;
+    width:100%;
+    max-width:320px;
+  }
+  .rename-dialog-title{
+    font-size:13.5px;
+    font-weight:700;
+    margin-bottom:12px;
+    color:var(--ink);
+  }
+  .rename-dialog-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:4px;
+  }
+  .rename-dialog-actions button:last-child{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .month-year-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .month-year-row select{flex:1;}
+  #weekOfMonthList{max-height:280px;overflow-y:auto;margin-bottom:8px;}
+  .week-of-month-option{
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:6px;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .week-of-month-option.selected{
+    border-color:var(--accent);
+    background:#E4EFE8;
+    color:var(--accent);
+  }
   .prog-lower{
     display:flex;
     align-items:flex-start;
@@ -292,15 +374,6 @@
     display:flex;
     flex-direction:column;
     gap:6px;
-  }
-  #toggleUnscheduledBtn{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:6px 10px;
-    align-self:flex-start;
-    white-space:nowrap;
-    width:max-content;
   }
   #unscheduledSection{
     flex:0 0 auto;
@@ -394,6 +467,7 @@
     justify-content:center;
     cursor:pointer;
     overflow:hidden;
+    position:relative;
   }
   .week-title-strip-inner{
     display:flex;
@@ -411,6 +485,20 @@
   .week-title-strip.unset .week-title-text{
     color:#A6432F;
     font-weight:600;
+  }
+  .week-cal-btn{
+    position:absolute;
+    top:9px;
+    right:6px;
+    font-size:12px;
+    opacity:0.8;
+    z-index:1;
+  }
+  .week-cal-btn.set{
+    background:#22C55E;
+    border-radius:50%;
+    padding:2px 4px;
+    opacity:1;
   }
   .week-row-days{
     display:flex;
@@ -665,24 +753,82 @@
   }
 
   /* Calendar view */
-  .day-tabs{
+  .calendar-nav{
     display:flex;
-    gap:6px;
-    overflow-x:auto;
-    margin-bottom:12px;
-    scrollbar-width:none;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
   }
-  .day-tabs::-webkit-scrollbar{display:none;}
-  .day-tab{
-    flex:0 0 auto;
-    padding:8px 13px;
-    border-radius:8px;
-    border:1px solid var(--line);
+  .cal-nav-btn{
     background:var(--surface);
-    font-size:13px;
-    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:8px;
+    width:38px;height:38px;
+    font-size:18px;
+    color:var(--ink);
   }
-  .day-tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .cal-month-label{
+    background:none;
+    border:none;
+    font-family:Georgia,serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--ink);
+  }
+  .calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:4px;
+    margin-bottom:14px;
+  }
+  .calendar-weekday{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    font-weight:700;
+    padding-bottom:4px;
+  }
+  .calendar-day{
+    position:relative;
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .calendar-day.empty{
+    background:none;
+    border:none;
+    cursor:default;
+  }
+  .calendar-day.has-visits{
+    border-color:#22C55E;
+    font-weight:700;
+  }
+  .calendar-day.selected{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  .cal-day-dot{
+    position:absolute;
+    bottom:2px;
+    right:2px;
+    background:#22C55E;
+    color:#fff;
+    font-size:9px;
+    font-weight:700;
+    border-radius:50%;
+    width:15px;height:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
 
   .visit-card{
     background:var(--surface);
@@ -736,7 +882,7 @@
     background:none;
     border:none;
     padding:10px 0 8px;
-    font-size:12px;
+    font-size:16px;
     color:var(--muted);
     display:flex;
     flex-direction:column;
@@ -800,13 +946,17 @@
       <h1>Planificador CGS <span id="appVersionTag" class="app-version-tag"></span></h1>
       <div class="sub" id="monthLabel">Cargando...</div>
     </div>
-    <button id="toggleReorderBtn" class="reorder-toggle-btn">☰ Mover</button>
+    <div class="app-header-actions">
+      <button id="toggleUnscheduledBtn" class="reorder-toggle-btn">◂ Contraer</button>
+      <button id="toggleReorderBtn" class="reorder-toggle-btn">☰ Mover</button>
+      <button id="toggleFilterBtn" class="reorder-toggle-btn">Filtro ▾</button>
+      <button id="tab-listas" class="reorder-toggle-btn config-gear-btn" onclick="switchView('listas')" title="Configuración">⚙️</button>
+    </div>
   </div>
 </header>
 
 <div class="week-strip-row" id="weekStripRow">
   <div class="week-strip" id="weekStrip"></div>
-  <button class="btn-mini" id="toggleFilterBtn">Filtro ▾</button>
 </div>
 
 <main>
@@ -834,12 +984,12 @@
         <select id="groupSelect">
           <option value="ruta">Agrupar por: Ruta</option>
           <option value="departamento">Agrupar por: Departamento</option>
-          <option value="municipio">Agrupar por: Municipio (Sector)</option>
+          <option value="municipio">Agrupar por: Sector</option>
         </select>
         <select id="sortSelect">
           <option value="nombre">Orden: Nombre A-Z</option>
           <option value="departamento">Orden: Departamento</option>
-          <option value="municipio">Orden: Municipio A-Z</option>
+          <option value="municipio">Orden: Sector A-Z</option>
           <option value="prioridad">Orden: Prioridad</option>
         </select>
       </div>
@@ -858,7 +1008,7 @@
           <div class="filter-bar">
             <button class="filter-chip-btn" id="btnFilterRuta">Ruta</button>
             <button class="filter-chip-btn" id="btnFilterDepartamento">Departamento</button>
-            <button class="filter-chip-btn" id="btnFilterMunicipio">Municipio</button>
+            <button class="filter-chip-btn" id="btnFilterMunicipio">Sector</button>
             <button class="filter-chip-btn" id="btnFilterPrioridad">Prioridad</button>
             <button class="btn-mini" id="clearWeekFilterBtn">Quitar</button>
           </div>
@@ -882,7 +1032,6 @@
       </section>
       <div class="prog-lower">
         <div class="unscheduled-wrap" id="unscheduledWrap">
-          <button class="btn-mini" id="toggleUnscheduledBtn">◂ Contraer</button>
           <section id="unscheduledSection">
             <div class="section-title">
               <span>Sin programar <span id="unscheduledCount"></span></span>
@@ -902,32 +1051,65 @@
 
   <!-- VISTA: CALENDARIO -->
   <div class="view" id="view-calendario">
-    <div class="day-tabs" id="dayTabs"></div>
-    <div class="section-title"><span>Visitas del día</span></div>
-    <div id="visitList"></div>
+    <div class="calendar-nav">
+      <button id="calPrevMonth" class="cal-nav-btn">‹</button>
+      <button id="calMonthLabel" class="cal-month-label"></button>
+      <button id="calNextMonth" class="cal-nav-btn">›</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div id="calendarDayDetail"></div>
   </div>
 
-  <!-- VISTA: LISTAS DEL SISTEMA -->
+  <!-- VISTA: CONFIGURACIÓN -->
   <div class="view" id="view-listas">
-    <section>
-      <div class="section-title"><span>Rutas</span></div>
-      <div id="listaRutas"></div>
-    </section>
-    <section>
-      <div class="section-title"><span>Departamentos</span></div>
-      <div id="listaDepartamentos"></div>
-    </section>
-    <section>
-      <div class="section-title"><span>Municipios (Sector)</span></div>
-      <div id="listaMunicipios"></div>
-    </section>
-    <section>
-      <div class="section-title"><span>Prioridad</span></div>
-      <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
-        Ordena esta lista a mano con las flechas — así aparecerán los clientes en toda la app cuando ordenes por Prioridad.
-      </div>
-      <div id="listaPrioridad"></div>
-    </section>
+    <div class="config-menu-grid" id="configMenuGrid">
+      <button class="config-menu-btn" id="configMenuListasBtn">
+        <span class="config-menu-icon">📋</span>
+        <span>Listas</span>
+      </button>
+      <button class="config-menu-btn" id="configMenuRespaldoBtn">
+        <span class="config-menu-icon">💾</span>
+        <span>Respaldo</span>
+      </button>
+    </div>
+
+    <div id="configSubListas" style="display:none;">
+      <button class="btn-mini config-back-btn" id="configBackListasBtn">← Volver</button>
+      <section>
+        <div class="section-title"><span>Rutas</span></div>
+        <div id="listaRutas"></div>
+      </section>
+      <section>
+        <div class="section-title"><span>Departamentos</span></div>
+        <div id="listaDepartamentos"></div>
+      </section>
+      <section>
+        <div class="section-title"><span>Sector</span></div>
+        <div id="listaMunicipios"></div>
+      </section>
+      <section>
+        <div class="section-title"><span>Prioridad</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
+          Ordena esta lista a mano con las flechas — así aparecerán los clientes en toda la app cuando ordenes por Prioridad.
+        </div>
+        <div id="listaPrioridad"></div>
+      </section>
+    </div>
+
+    <div id="configSubRespaldo" style="display:none;">
+      <button class="btn-mini config-back-btn" id="configBackRespaldoBtn">← Volver</button>
+      <section>
+        <div class="section-title"><span>Respaldo</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
+          Descarga un archivo con todos tus datos (clientes, meses, semanas, visitas asignadas) para llevarlo a otro dispositivo, o para tener un respaldo por seguridad.
+        </div>
+        <div class="filter-bar" style="overflow:visible;">
+          <button class="filter-chip-btn" id="exportBackupBtn">⬇ Exportar respaldo</button>
+          <button class="filter-chip-btn" id="importBackupBtn">⬆ Importar respaldo</button>
+          <input type="file" id="importBackupFile" accept=".json" style="display:none;">
+        </div>
+      </section>
+    </div>
   </div>
 </main>
 
@@ -941,12 +1123,34 @@
   <button id="tab-calendario" onclick="switchView('calendario')">
     <span class="dot"></span>Calendario
   </button>
-  <button id="tab-listas" onclick="switchView('listas')">
-    <span class="dot"></span>Listas
-  </button>
 </nav>
 
 <div class="toast" id="toast"></div>
+
+<div class="rename-dialog-overlay" id="monthYearOverlay" style="display:none;">
+  <div class="rename-dialog">
+    <div class="rename-dialog-title" id="monthYearTitle">Elegir mes</div>
+    <div class="month-year-row">
+      <select id="monthYearMonthSel"></select>
+      <select id="monthYearYearSel"></select>
+    </div>
+    <div class="rename-dialog-actions">
+      <button class="btn-mini" id="monthYearCancel">Cancelar</button>
+      <button id="monthYearOk">Elegir</button>
+    </div>
+  </div>
+</div>
+
+<div class="rename-dialog-overlay" id="weekOfMonthOverlay" style="display:none;">
+  <div class="rename-dialog">
+    <div class="rename-dialog-title" id="weekOfMonthTitle">Elegir semana del mes</div>
+    <div id="weekOfMonthList"></div>
+    <div class="rename-dialog-actions">
+      <button class="btn-mini" id="weekOfMonthClear">Quitar</button>
+      <button class="btn-mini" id="weekOfMonthCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
@@ -961,7 +1165,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v33';
+const APP_VERSION = 'v45';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1030,10 +1234,46 @@ function todayMonthKey(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
 
+const MESES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
 function monthLabel(key){
   const [y,m] = key.split('-').map(Number);
-  const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  return nombres[m-1] + ' ' + y;
+  return MESES_NOMBRES[m-1] + ' ' + y;
+}
+
+function formatCalendarMonth(cm){
+  return MESES_NOMBRES[cm.month-1] + ' ' + cm.year;
+}
+
+function formatShortDate(d){
+  return d.getDate() + ' ' + MESES_CORTOS[d.getMonth()];
+}
+
+function getWeeksOfMonth(year, month){
+  // month: 1-12. Devuelve las semanas de lunes a viernes que tocan ese mes.
+  const firstOfMonth = new Date(year, month-1, 1);
+  const lastOfMonth = new Date(year, month, 0);
+  let d = new Date(firstOfMonth);
+  const dow = d.getDay(); // 0=domingo
+  const diffToMonday = (dow===0) ? -6 : (1-dow);
+  d.setDate(d.getDate() + diffToMonday);
+  const weeks = [];
+  let n = 1;
+  while(d <= lastOfMonth){
+    const mon = new Date(d);
+    const fri = new Date(d);
+    fri.setDate(fri.getDate()+4);
+    weeks.push({
+      n,
+      startISO: mon.toISOString().slice(0,10),
+      endISO: fri.toISOString().slice(0,10),
+      label: `Semana ${n}: ${formatShortDate(mon)} - ${formatShortDate(fri)}`
+    });
+    d.setDate(d.getDate()+7);
+    n++;
+  }
+  return weeks;
 }
 
 function rutaColor(str){
@@ -1165,6 +1405,14 @@ function migrateOldData(){
         week.semanaTitulos = [];
         migrated = true;
       }
+      if(week.calendarMonth===undefined){
+        week.calendarMonth = null;
+        migrated = true;
+      }
+      if(!week.semanaFechas){
+        week.semanaFechas = [];
+        migrated = true;
+      }
     });
   });
   if(migrated) save();
@@ -1176,20 +1424,62 @@ function ensureMonth(key){
   }
 }
 
-function newWeek(n){
+function newWeek(n, label, calendarMonth){
   return {
-    label: 'Mes ' + n,
+    label: label || ('Mes ' + n),
+    calendarMonth: calendarMonth || null,
     filtro: defaultWeekFilter(),
     semanaTitulos: [],
+    semanaFechas: [],
     days: DIAS.map(d => ({ id:newDayId(), title:d.label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() }))
   };
 }
 
-function duplicateWeek(week){
+function duplicateWeek(week, newCalendarMonth, newLabel){
   const clone = JSON.parse(JSON.stringify(week));
-  clone.label = 'Copia de ' + week.label;
+  clone.label = newLabel || ('Copia de ' + week.label);
+  clone.calendarMonth = newCalendarMonth || null;
+  if(!clone.semanaFechas) clone.semanaFechas = [];
   clone.days.forEach(d=> d.id = newDayId());
   return clone;
+}
+
+function getDayRealDate(week, dayIdx){
+  if(!week.calendarMonth) return null;
+  const groupIndex = Math.floor(dayIdx / DAYS_PER_SEMANA);
+  const posInRow = dayIdx % DAYS_PER_SEMANA;
+  const fecha = week.semanaFechas[groupIndex];
+  if(!fecha) return null;
+  const d = new Date(fecha.startISO + 'T00:00:00');
+  d.setDate(d.getDate() + posInRow);
+  return d;
+}
+
+function toISODateLocal(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getCopiedVisitsByDate(){
+  const map = {};
+  const seenPerDate = {};
+  const months = currentMonth().weeks;
+  months.forEach(week=>{
+    if(!week.calendarMonth) return;
+    week.days.forEach((day, dayIdx)=>{
+      const realDate = getDayRealDate(week, dayIdx);
+      if(!realDate) return;
+      const iso = toISODateLocal(realDate);
+      day.clientSlots.forEach(clientId=>{
+        if(clientId && state.copiedClients.has(clientId)){
+          if(!map[iso]){ map[iso] = []; seenPerDate[iso] = new Set(); }
+          if(seenPerDate[iso].has(clientId)) return;
+          seenPerDate[iso].add(clientId);
+          map[iso].push({ clientId, weekLabel: week.label, dayTitulo: day.titulo });
+        }
+      });
+    });
+  });
+  return map;
 }
 
 function getSemanaGroups(week){
@@ -1250,7 +1540,7 @@ function renderHeader(){
 function renderWeekStrip(){
   const strip = document.getElementById('weekStrip');
   const row = document.getElementById('weekStripRow');
-  const hideStrip = state.currentView==='clientes' || state.currentView==='listas';
+  const hideStrip = state.currentView==='clientes' || state.currentView==='listas' || state.currentView==='calendario';
   row.classList.toggle('hidden', hideStrip);
   if(hideStrip) return;
   strip.innerHTML = '';
@@ -1261,7 +1551,10 @@ function renderWeekStrip(){
   strip.appendChild(pillsList);
 
   const weeks = currentMonth().weeks;
+  const activeWeekObj = weeks[state.currentWeekIndex];
+
   weeks.forEach((w, i)=>{
+    if(w.calendarMonth) return; // los meses reales no se listan uno por uno, ver botón único abajo
     const isActive = i===state.currentWeekIndex;
     const pill = document.createElement('button');
     pill.className = 'week-pill' + (isActive ? ' active':'');
@@ -1293,13 +1586,15 @@ function renderWeekStrip(){
     dup.textContent = '⧉';
     dup.onclick = (e)=>{
       e.stopPropagation();
-      const clone = duplicateWeek(w);
-      weeks.splice(i+1, 0, clone);
-      state.currentWeekIndex = i+1;
-      save();
-      renderWeekStrip();
-      renderTickets();
-      renderCalendarView();
+      openMonthYearPicker(`Duplicar "${w.label}" — ¿a qué mes y año lo asignas?`, ({month, year})=>{
+        const clone = duplicateWeek(w, {month, year}, formatCalendarMonth({month,year}));
+        weeks.splice(i+1, 0, clone);
+        state.currentWeekIndex = i+1;
+        save();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      });
     };
     pill.appendChild(dup);
 
@@ -1331,16 +1626,91 @@ function renderWeekStrip(){
     pillsList.appendChild(pill);
   });
 
+  /* Botón único para navegar entre los meses con fecha real */
+  const now = new Date();
+  const todayCM = { month: now.getMonth()+1, year: now.getFullYear() };
+  const activeIsReal = activeWeekObj && activeWeekObj.calendarMonth;
+  const realBtn = document.createElement('button');
+  realBtn.className = 'week-pill real-month-btn' + (activeIsReal ? ' active':'');
+  const displayCM = activeIsReal ? activeWeekObj.calendarMonth : todayCM;
+  realBtn.innerHTML = `<span>📅 ${formatCalendarMonth(displayCM).toUpperCase()}</span>`;
+
+  if(activeIsReal){
+    const idx = weeks.indexOf(activeWeekObj);
+    const pencil2 = document.createElement('span');
+    pencil2.className = 'edit-pencil';
+    pencil2.title = 'Renombrar';
+    pencil2.textContent = '✎';
+    pencil2.onclick = (e)=>{ e.stopPropagation(); startEditWeekName(realBtn, activeWeekObj); };
+    realBtn.appendChild(pencil2);
+
+    const dup2 = document.createElement('span');
+    dup2.className = 'move-week duplicate-week';
+    dup2.title = 'Duplicar este mes';
+    dup2.textContent = '⧉';
+    dup2.onclick = (e)=>{
+      e.stopPropagation();
+      openMonthYearPicker(`Duplicar "${activeWeekObj.label}" — ¿a qué mes y año lo asignas?`, ({month, year})=>{
+        const clone = duplicateWeek(activeWeekObj, {month, year}, formatCalendarMonth({month,year}));
+        weeks.splice(idx+1, 0, clone);
+        state.currentWeekIndex = idx+1;
+        save();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      });
+    };
+    realBtn.appendChild(dup2);
+
+    const del2 = document.createElement('span');
+    del2.className = 'move-week delete-week';
+    del2.title = 'Eliminar este mes';
+    del2.textContent = '🗑';
+    del2.onclick = (e)=>{
+      e.stopPropagation();
+      if(!confirm(`¿Eliminar "${activeWeekObj.label}" con todo su contenido (semanas, rutas y clientes asignados)? Esta acción no se puede deshacer.`)) return;
+      weeks.splice(idx,1);
+      if(weeks.length===0) weeks.push(newWeek(1));
+      state.currentWeekIndex = Math.max(0, Math.min(idx, weeks.length-1));
+      save();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    };
+    realBtn.appendChild(del2);
+  }
+
+  realBtn.onclick = (e)=>{
+    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
+    openMonthYearPicker('¿Qué mes quieres ver?', ({month, year})=>{
+      const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===month && w.calendarMonth.year===year);
+      if(found){
+        state.currentWeekIndex = weeks.indexOf(found);
+        closeSlotPicker();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      } else {
+        toast(`Aún no has creado ${formatCalendarMonth({month,year})}. Usa "+ Mes" para crearlo.`);
+      }
+    });
+  };
+  pillsList.appendChild(realBtn);
+
   if(reorderModeActive){
     new Sortable(pillsList, {
       handle: '.month-drag-handle',
+      draggable: '.week-pill:not(.real-month-btn)',
       animation: 150,
       onEnd: (evt)=>{
         const weeks2 = currentMonth().weeks;
         const activeWeek = weeks2[state.currentWeekIndex];
-        const moved = weeks2.splice(evt.oldIndex,1)[0];
-        weeks2.splice(evt.newIndex,0,moved);
-        state.currentWeekIndex = weeks2.indexOf(activeWeek);
+        const masters = weeks2.filter(w=>!w.calendarMonth);
+        const reals = weeks2.filter(w=>w.calendarMonth);
+        const moved = masters.splice(evt.oldIndex,1)[0];
+        masters.splice(evt.newIndex,0,moved);
+        currentMonth().weeks = masters.concat(reals);
+        state.currentWeekIndex = currentMonth().weeks.indexOf(activeWeek);
         save();
         renderWeekStrip();
       }
@@ -1351,12 +1721,26 @@ function renderWeekStrip(){
   addBtn.className = 'week-pill add';
   addBtn.textContent = '+ Mes';
   addBtn.onclick = ()=>{
-    weeks.push(newWeek(weeks.length+1));
-    state.currentWeekIndex = weeks.length-1;
-    save();
-    renderWeekStrip();
-    renderTickets();
-    renderCalendarView();
+    if(confirm('¿Quieres asignarle un mes/año real del calendario a este nuevo mes?\n\nAceptar = elegir mes y año real\nCancelar = crear como "mes maestro" (plantilla, sin fecha)')){
+      openMonthYearPicker('¿Qué mes y año vas a trabajar?', ({month, year})=>{
+        const w = newWeek(weeks.length+1, formatCalendarMonth({month,year}), {month, year});
+        weeks.push(w);
+        state.currentWeekIndex = weeks.length-1;
+        save();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      });
+    } else {
+      const nombre = prompt('Nombre de este mes maestro/plantilla:', 'Mes maestro');
+      if(nombre===null) return;
+      weeks.push(newWeek(weeks.length+1, nombre.trim() || 'Mes maestro'));
+      state.currentWeekIndex = weeks.length-1;
+      save();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    }
   };
   strip.appendChild(addBtn);
 }
@@ -1485,7 +1869,7 @@ function renderWeekFilterControls(){
 
   setChip('btnFilterRuta', 'Ruta', 'rutas', getAllRoutes(), false);
   setChip('btnFilterDepartamento', 'Departamento', 'departamentos', getDepartamentosFor(wf), false);
-  setChip('btnFilterMunicipio', 'Municipio', 'municipios', getMunicipiosFor(wf), false);
+  setChip('btnFilterMunicipio', 'Sector', 'municipios', getMunicipiosFor(wf), false);
   setChip('btnFilterPrioridad', 'Prioridad', 'prioridades', Object.keys(PRIORITY_LABELS), true);
 
   document.getElementById('clearWeekFilterBtn').onclick = ()=>{
@@ -1589,8 +1973,16 @@ document.getElementById('filterMultiDone').onclick = ()=>{
   const week = currentWeek();
   const field = filterPanelState.field;
   week.filtro[field] = Array.from(filterPanelState.temp);
-  if(field==='rutas'){ week.filtro.departamentos = []; week.filtro.municipios = []; }
-  if(field==='departamentos'){ week.filtro.municipios = []; }
+
+  if(field==='rutas' || field==='departamentos'){
+    if(field==='rutas'){
+      const validDeps = new Set(getDepartamentosFor(week.filtro));
+      week.filtro.departamentos = week.filtro.departamentos.filter(d=> validDeps.has(d));
+    }
+    const validMuns = new Set(getMunicipiosFor(week.filtro));
+    week.filtro.municipios = week.filtro.municipios.filter(m=> validMuns.has(m));
+  }
+
   document.getElementById('filterMultiPanel').style.display = 'none';
   filterPanelState = null;
   save();
@@ -1609,13 +2001,17 @@ function renderUnscheduledList(){
   const wf = week.filtro;
   const excludeIds = assignedClientIdsThisWeek();
   const clients = getEligibleClientsForPicker('', null, null, wf, excludeIds);
+  const allMatching = getEligibleClientsForPicker('', null, null, wf, new Set());
+  const programadosCount = allMatching.length - clients.length;
 
   document.getElementById('unscheduledCount').textContent = `(${clients.length})`;
 
   const section = document.getElementById('unscheduledSection');
   const toggleBtn = document.getElementById('toggleUnscheduledBtn');
   section.classList.toggle('hidden', unscheduledCollapsed);
-  toggleBtn.textContent = unscheduledCollapsed ? `▸ (${clients.length})` : '◂ Contraer';
+  toggleBtn.textContent = unscheduledCollapsed
+    ? `👤 Programados (${programadosCount}) / Sin programar (${clients.length})`
+    : '◂ Contraer 👤 Sin programar';
   toggleBtn.onclick = ()=>{
     unscheduledCollapsed = !unscheduledCollapsed;
     renderUnscheduledList();
@@ -1736,9 +2132,26 @@ function renderClientGroupList(opts){
 function renderListasView(){
   renderSimpleList('listaRutas', getAllRoutes(), 'No hay rutas todavía — importa tus clientes en la pestaña "Clientes".');
   renderSimpleList('listaDepartamentos', getAllDepartamentos(), 'No hay departamentos todavía — importa tus clientes en la pestaña "Clientes".');
-  renderSimpleList('listaMunicipios', getAllMunicipios(), 'No hay municipios todavía — importa tus clientes en la pestaña "Clientes".');
+  renderSimpleList('listaMunicipios', getAllMunicipios(), 'No hay sectores todavía — importa tus clientes en la pestaña "Clientes".');
   renderPriorityList();
 }
+
+function showConfigMenu(){
+  document.getElementById('configMenuGrid').style.display = 'grid';
+  document.getElementById('configSubListas').style.display = 'none';
+  document.getElementById('configSubRespaldo').style.display = 'none';
+}
+
+document.getElementById('configMenuListasBtn').onclick = ()=>{
+  document.getElementById('configMenuGrid').style.display = 'none';
+  document.getElementById('configSubListas').style.display = 'block';
+};
+document.getElementById('configMenuRespaldoBtn').onclick = ()=>{
+  document.getElementById('configMenuGrid').style.display = 'none';
+  document.getElementById('configSubRespaldo').style.display = 'block';
+};
+document.getElementById('configBackListasBtn').onclick = showConfigMenu;
+document.getElementById('configBackRespaldoBtn').onclick = showConfigMenu;
 
 function renderSimpleList(wrapId, items, emptyMsg){
   const wrap = document.getElementById(wrapId);
@@ -1846,12 +2259,14 @@ function renderTickets(){
       rowEl.dataset.groupIndex = groupIndex;
 
       const titulo = week.semanaTitulos[groupIndex] || '';
+      const fechaSemana = week.semanaFechas[groupIndex] || null;
       const titleStrip = document.createElement('div');
       titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset');
       titleStrip.innerHTML = `
+        ${week.calendarMonth ? `<span class="week-cal-btn${fechaSemana?' set':''}" title="Elegir semana real del mes">📅</span>` : ''}
         <span class="week-title-strip-inner">
           <span class="week-title-text">${titulo || '+ Título'}</span>
-          <span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">${reorderModeActive?'☰':'📋'}</span>
+          ${reorderModeActive ? `<span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">☰</span>` : ''}
         </span>
       `;
       titleStrip.querySelector('.week-title-text').onclick = (e)=>{
@@ -1863,6 +2278,21 @@ function renderTickets(){
           renderTickets();
         }
       };
+      const calBtn = titleStrip.querySelector('.week-cal-btn');
+      if(calBtn){
+        calBtn.onclick = (e)=>{
+          e.stopPropagation();
+          openWeekOfMonthPicker(week.calendarMonth, fechaSemana, (picked)=>{
+            week.semanaFechas[groupIndex] = picked;
+            save();
+            renderTickets();
+          }, ()=>{
+            week.semanaFechas[groupIndex] = null;
+            save();
+            renderTickets();
+          });
+        };
+      }
       rowEl.appendChild(titleStrip);
 
       daysContainer = document.createElement('div');
@@ -2281,7 +2711,7 @@ function renderInlinePickerResults(){
   const weekFilterParts = [];
   if(wf.rutas.length) weekFilterParts.push(`Ruta: ${wf.rutas.join(', ')}`);
   if(wf.departamentos.length) weekFilterParts.push(`Depto: ${wf.departamentos.join(', ')}`);
-  if(wf.municipios.length) weekFilterParts.push(`Municipio: ${wf.municipios.join(', ')}`);
+  if(wf.municipios.length) weekFilterParts.push(`Sector: ${wf.municipios.join(', ')}`);
   if(wf.prioridades.length) weekFilterParts.push(`Prioridad: ${wf.prioridades.map(p=>PRIORITY_LABELS[p]).join(', ')}`);
 
   let noteHtml = '';
@@ -2426,6 +2856,125 @@ function buildClientDetailCard(c){
 }
 
 /* ---------- Copiar al portapapeles ---------- */
+function exportBackup(){
+  const backup = {
+    app: 'Planificador CGS',
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    clientes: state.clientes,
+    meses: state.meses,
+    priorityOrder: state.priorityOrder,
+    priorityColors: state.priorityColors,
+    copiedClients: Array.from(state.copiedClients)
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dateStr = new Date().toISOString().slice(0,10);
+  a.download = `planificador-cgs-respaldo-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Respaldo descargado');
+}
+
+function importBackup(file){
+  if(!file) return;
+  if(!confirm('Esto reemplazará TODOS los datos actuales de esta app (clientes, meses, semanas y visitas asignadas) con los del archivo de respaldo. Esta acción no se puede deshacer. ¿Continuar?')) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data || !Array.isArray(data.clientes) || typeof data.meses !== 'object'){
+        toast('El archivo no parece ser un respaldo válido de Planificador CGS.');
+        return;
+      }
+      state.clientes = data.clientes || [];
+      state.meses = data.meses || {};
+      const validSet = new Set(PRIORITY_RANK);
+      state.priorityOrder = (Array.isArray(data.priorityOrder) && data.priorityOrder.length===PRIORITY_RANK.length && data.priorityOrder.every(k=>validSet.has(k)))
+        ? data.priorityOrder : PRIORITY_RANK.slice();
+      state.priorityColors = (data.priorityColors && typeof data.priorityColors==='object')
+        ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
+      state.copiedClients = new Set(Array.isArray(data.copiedClients) ? data.copiedClients : []);
+      migrateOldData();
+      state.currentMonthKey = todayMonthKey();
+      ensureMonth(state.currentMonthKey);
+      state.currentWeekIndex = 0;
+      save();
+      renderHeader();
+      renderWeekStrip();
+      renderClientesView();
+      renderTickets();
+      renderListasView();
+      toast('Respaldo importado correctamente');
+    }catch(err){
+      toast('No se pudo leer el archivo. Verifica que sea un respaldo válido.');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('exportBackupBtn').onclick = exportBackup;
+document.getElementById('importBackupBtn').onclick = ()=> document.getElementById('importBackupFile').click();
+document.getElementById('importBackupFile').addEventListener('change', (e)=> importBackup(e.target.files[0]));
+
+function openMonthYearPicker(title, onPick){
+  const overlay = document.getElementById('monthYearOverlay');
+  document.getElementById('monthYearTitle').textContent = title;
+  const monthSel = document.getElementById('monthYearMonthSel');
+  const yearSel = document.getElementById('monthYearYearSel');
+  monthSel.innerHTML = MESES_NOMBRES.map((m,i)=>`<option value="${i+1}">${m}</option>`).join('');
+  const nowYear = new Date().getFullYear();
+  const years = [];
+  for(let y=nowYear-1; y<=nowYear+3; y++) years.push(y);
+  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  monthSel.value = new Date().getMonth()+1;
+  yearSel.value = nowYear;
+  overlay.style.display = 'flex';
+
+  const close = ()=>{ overlay.style.display = 'none'; };
+  document.getElementById('monthYearCancel').onclick = close;
+  document.getElementById('monthYearOk').onclick = ()=>{
+    const month = parseInt(monthSel.value,10);
+    const year = parseInt(yearSel.value,10);
+    close();
+    onPick({month, year});
+  };
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+}
+
+function openWeekOfMonthPicker(calendarMonth, currentSelection, onPick, onClear){
+  const overlay = document.getElementById('weekOfMonthOverlay');
+  document.getElementById('weekOfMonthTitle').textContent = `Semanas de ${formatCalendarMonth(calendarMonth)}`;
+  const listWrap = document.getElementById('weekOfMonthList');
+  const weeks = getWeeksOfMonth(calendarMonth.year, calendarMonth.month);
+  listWrap.innerHTML = '';
+  weeks.forEach(w=>{
+    const row = document.createElement('div');
+    const isSelected = currentSelection && currentSelection.startISO===w.startISO;
+    row.className = 'week-of-month-option' + (isSelected ? ' selected':'');
+    row.textContent = w.label;
+    row.onclick = ()=>{
+      close();
+      onPick({startISO:w.startISO, endISO:w.endISO});
+    };
+    listWrap.appendChild(row);
+  });
+  overlay.style.display = 'flex';
+
+  const close = ()=>{ overlay.style.display = 'none'; };
+  document.getElementById('weekOfMonthCancel').onclick = close;
+  document.getElementById('weekOfMonthClear').onclick = ()=>{
+    close();
+    if(onClear) onClear();
+  };
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+}
+
 function copyToClipboard(text){
   if(!text){ return; }
   if(navigator.clipboard && navigator.clipboard.writeText){
@@ -2479,66 +3028,106 @@ function closeSlotPicker(){
 }
 
 /* ---------- RENDER: vista calendario ---------- */
-function renderDayTabs(){
-  const wrap = document.getElementById('dayTabs');
-  wrap.innerHTML = '';
-  const week = currentWeek();
-  ensureCurrentDayKey();
-  week.days.forEach(d=>{
-    const btn = document.createElement('button');
-    btn.className = 'day-tab' + (d.id===state.currentDayKey ? ' active':'');
-    btn.textContent = d.title;
-    btn.onclick = ()=>{ state.currentDayKey = d.id; renderCalendarView(); };
-    wrap.appendChild(btn);
-  });
-}
-
-function renderVisitList(){
-  const wrap = document.getElementById('visitList');
-  wrap.innerHTML = '';
-  const week = currentWeek();
-  ensureCurrentDayKey();
-  const day = dayById(week, state.currentDayKey);
-
-  if(!day){
-    wrap.innerHTML = `<div class="empty-state">Esta semana no tiene días todavía.<br>Ve a "Programación" para agregar uno.</div>`;
-    return;
-  }
-
-  const anyFilled = day.clientSlots.some(Boolean);
-  if(!anyFilled){
-    wrap.innerHTML = `<div class="empty-state">Sin visitas asignadas todavía.<br>Ve a "Programación" para agregar clientes a este día.</div>`;
-    return;
-  }
-
-  day.clientSlots.forEach((clientId, i)=>{
-    if(!clientId) return;
-    const c = clientById(clientId);
-    if(!c) return;
-    const card = document.createElement('div');
-    card.className = 'visit-card';
-    card.innerHTML = `
-      <div>
-        <div class="vname"><span class="vnum">${i+1}.</span><span style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</span></div>
-        <div class="vmeta">${[c.prioridad, c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
-        <span class="vroute" style="background:${rutaColor(c.ruta)}22;color:${rutaColor(c.ruta)}">${c.ruta||'Sin ruta'}</span>
-      </div>
-      <button class="remove-btn">Quitar</button>
-    `;
-    card.querySelector('.remove-btn').onclick = ()=>{
-      day.clientSlots[i] = null;
-      save();
-      renderVisitList();
-      renderTickets();
-    };
-    wrap.appendChild(card);
-  });
-}
+let calViewMonth = null;
+let calViewYear = null;
+let calSelectedDate = null;
 
 function renderCalendarView(){
-  renderDayTabs();
-  renderVisitList();
+  if(calViewMonth===null){
+    const now = new Date();
+    calViewMonth = now.getMonth()+1;
+    calViewYear = now.getFullYear();
+  }
+  document.getElementById('calMonthLabel').textContent = formatCalendarMonth({month:calViewMonth, year:calViewYear});
+
+  const visitsByDate = getCopiedVisitsByDate();
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  ['L','M','X','J','V','S','D'].forEach(letra=>{
+    const h = document.createElement('div');
+    h.className = 'calendar-weekday';
+    h.textContent = letra;
+    grid.appendChild(h);
+  });
+
+  const first = new Date(calViewYear, calViewMonth-1, 1);
+  const startOffset = (first.getDay()+6) % 7; // lunes=0
+  const daysInMonth = new Date(calViewYear, calViewMonth, 0).getDate();
+
+  for(let i=0;i<startOffset;i++){
+    const blank = document.createElement('div');
+    blank.className = 'calendar-day empty';
+    grid.appendChild(blank);
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = calViewYear + '-' + String(calViewMonth).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const visits = visitsByDate[iso] || [];
+    const cell = document.createElement('div');
+    cell.className = 'calendar-day' + (visits.length ? ' has-visits':'') + (calSelectedDate===iso ? ' selected':'');
+    cell.innerHTML = `${d}` + (visits.length ? `<span class="cal-day-dot">${visits.length}</span>` : '');
+    cell.onclick = ()=>{
+      calSelectedDate = iso;
+      renderCalendarView();
+    };
+    grid.appendChild(cell);
+  }
+
+  renderCalendarDayDetail(visitsByDate);
 }
+
+function renderCalendarDayDetail(visitsByDate){
+  const wrap = document.getElementById('calendarDayDetail');
+  if(!calSelectedDate){
+    wrap.innerHTML = `<div class="empty-state">Toca un día para ver los clientes ya copiados/visitados ese día.</div>`;
+    return;
+  }
+  const visits = visitsByDate[calSelectedDate] || [];
+  const [yy,mm,dd] = calSelectedDate.split('-').map(Number);
+  const dObj = new Date(yy, mm-1, dd);
+  const titleTxt = formatShortDate(dObj) + ' de ' + yy;
+
+  if(visits.length===0){
+    wrap.innerHTML = `<div class="section-title"><span>${titleTxt}</span></div><div class="empty-state">Sin clientes copiados/visitados este día.</div>`;
+    return;
+  }
+
+  const cards = visits.map(v=>{
+    const c = clientById(v.clientId);
+    if(!c) return '';
+    return `<div class="visit-card">
+      <div>
+        <div class="vname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
+        <div class="vmeta">${[c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
+        <span class="vroute" style="background:${rutaColor(c.ruta)}22;color:${rutaColor(c.ruta)}">${c.ruta||'Sin ruta'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="section-title"><span>${titleTxt} — ${visits.length} visita(s)</span></div>${cards}`;
+}
+
+document.getElementById('calPrevMonth').onclick = ()=>{
+  calViewMonth--;
+  if(calViewMonth<1){ calViewMonth=12; calViewYear--; }
+  calSelectedDate = null;
+  renderCalendarView();
+};
+document.getElementById('calNextMonth').onclick = ()=>{
+  calViewMonth++;
+  if(calViewMonth>12){ calViewMonth=1; calViewYear++; }
+  calSelectedDate = null;
+  renderCalendarView();
+};
+document.getElementById('calMonthLabel').onclick = ()=>{
+  openMonthYearPicker('¿Qué mes quieres ver en el calendario?', ({month, year})=>{
+    calViewMonth = month;
+    calViewYear = year;
+    calSelectedDate = null;
+    renderCalendarView();
+  });
+};
 
 /* ---------- vistas / tabs ---------- */
 function switchView(view){
@@ -2551,6 +3140,8 @@ function switchView(view){
   document.getElementById('tab-programacion').classList.toggle('active', view==='programacion');
   document.getElementById('tab-calendario').classList.toggle('active', view==='calendario');
   document.getElementById('tab-listas').classList.toggle('active', view==='listas');
+  document.getElementById('toggleUnscheduledBtn').style.display = view==='programacion' ? '' : 'none';
+  document.getElementById('toggleFilterBtn').style.display = view==='programacion' ? '' : 'none';
   renderWeekStrip();
   if(view==='clientes'){
     closeSlotPicker();
@@ -2562,6 +3153,7 @@ function switchView(view){
     renderCalendarView();
   } else if(view==='listas'){
     closeSlotPicker();
+    showConfigMenu();
     renderListasView();
   }
 }
@@ -2612,10 +3204,20 @@ document.getElementById('sortSelect').addEventListener('change', (e)=>{
 
 /* ---------- init ---------- */
 load();
+(function selectCurrentRealMonthOnLoad(){
+  const now = new Date();
+  const todayMonth = now.getMonth()+1;
+  const todayYear = now.getFullYear();
+  const weeks = currentMonth().weeks;
+  const found = weeks.find(w => w.calendarMonth && w.calendarMonth.month===todayMonth && w.calendarMonth.year===todayYear);
+  if(found) state.currentWeekIndex = weeks.indexOf(found);
+})();
 renderHeader();
 renderWeekStrip();
 renderClientesView();
 renderTickets();
+document.getElementById('toggleUnscheduledBtn').style.display = 'none';
+document.getElementById('toggleFilterBtn').style.display = 'none';
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
