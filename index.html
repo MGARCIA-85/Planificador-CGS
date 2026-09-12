@@ -801,6 +801,30 @@
     color:var(--ink);
     cursor:pointer;
   }
+  @media (orientation: landscape){
+    .calendar-day{
+      aspect-ratio:auto;
+      height:34px;
+    }
+    .calendar-nav{ margin-bottom:6px; }
+    .calendar-grid{ margin-bottom:8px; gap:3px; }
+    .calendar-weekday{ padding-bottom:2px; }
+    .calendar-layout{
+      display:flex;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .calendar-col-left{
+      flex:0 0 auto;
+      width:300px;
+    }
+    .calendar-col-right{
+      flex:1;
+      min-width:0;
+      max-height:calc(100vh - 220px);
+      overflow-y:auto;
+    }
+  }
   .calendar-day.empty{
     background:none;
     border:none;
@@ -1051,13 +1075,19 @@
 
   <!-- VISTA: CALENDARIO -->
   <div class="view" id="view-calendario">
-    <div class="calendar-nav">
-      <button id="calPrevMonth" class="cal-nav-btn">‹</button>
-      <button id="calMonthLabel" class="cal-month-label"></button>
-      <button id="calNextMonth" class="cal-nav-btn">›</button>
+    <div class="calendar-layout">
+      <div class="calendar-col-left">
+        <div class="calendar-nav">
+          <button id="calPrevMonth" class="cal-nav-btn">‹</button>
+          <button id="calMonthLabel" class="cal-month-label"></button>
+          <button id="calNextMonth" class="cal-nav-btn">›</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+      <div class="calendar-col-right">
+        <div id="calendarDayDetail"></div>
+      </div>
     </div>
-    <div class="calendar-grid" id="calendarGrid"></div>
-    <div id="calendarDayDetail"></div>
   </div>
 
   <!-- VISTA: CONFIGURACIÓN -->
@@ -1165,7 +1195,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v52';
+const APP_VERSION = 'v54';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
