@@ -46,20 +46,72 @@
   }
   header.app-header h1{font-size:19px;letter-spacing:0.2px;}
   header.app-header .sub{font-size:12.5px;color:#9DB0AB;margin-top:2px;}
-
-  .week-strip{
+  .app-version-tag{
+    font-size:11px;
+    font-weight:400;
+    color:#8FA39D;
+    letter-spacing:0;
+    vertical-align:middle;
+  }
+  .app-header-row{
     display:flex;
-    gap:8px;
-    padding:12px 16px 4px;
-    overflow-x:auto;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .reorder-toggle-btn{
+    flex:0 0 auto;
+    background:none;
+    border:1px solid #4A5560;
+    color:#EDEFF2;
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:12.5px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .reorder-toggle-btn.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+
+  .week-strip-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding-right:14px;
     background:var(--bg);
     position:sticky;
     top:64px;
     z-index:15;
+  }
+  .week-strip-row #toggleFilterBtn{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+  .week-strip-row.hidden{display:none;}
+  .week-strip{
+    display:flex;
+    gap:8px;
+    padding:12px 4px 4px 16px;
+    overflow-x:auto;
+    flex:1;
+    min-width:0;
     scrollbar-width:none;
   }
-  .week-strip.hidden{display:none;}
   .week-strip::-webkit-scrollbar{display:none;}
+  .week-pills-list{
+    display:flex;
+    gap:8px;
+    flex:0 0 auto;
+  }
+  .drag-handle{
+    cursor:grab;
+    margin-right:4px;
+    opacity:0.9;
+  }
+  .drag-handle:active{cursor:grabbing;}
   .week-pill{
     flex:0 0 auto;
     padding:7px 14px;
@@ -78,15 +130,31 @@
   }
   .week-pill.add{color:var(--accent);border-style:dashed;}
   .week-pill .edit-pencil{margin-left:6px;opacity:0.85;}
-  .week-name-input{
-    border:none;
-    background:transparent;
-    color:inherit;
-    font-size:13.5px;
+  .week-pill .move-week{
+    margin-left:5px;
+    opacity:0.9;
+    font-weight:700;
+    font-size:15px;
+    padding:2px 4px;
+  }
+  .week-pill .delete-week{
+    color:var(--danger);
+    font-size:12px;
+  }
+  #weekFilterSection{margin-bottom:12px;}
+  #toggleFilterBtn{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:7px 12px;
     font-weight:600;
-    width:90px;
-    outline:none;
-    border-bottom:1px solid currentColor;
+  }
+  #filterBarWrap{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:10px 12px 12px;
+    margin-top:8px;
   }
 
   main{padding:12px 16px 24px;}
@@ -122,6 +190,11 @@
     overflow:hidden;
     margin-bottom:4px;
   }
+  #unscheduledCount{
+    font-weight:400;
+    color:var(--muted);
+    font-size:11.5px;
+  }
   .simple-row{
     padding:9px 12px;
     border-bottom:1px solid var(--line);
@@ -138,7 +211,18 @@
   }
   .priority-row:first-child{border-top-left-radius:var(--radius);border-top-right-radius:var(--radius);}
   .priority-row:last-child{border-bottom:none;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius);}
-  .priority-row .prio-chip{width:10px;height:10px;border-radius:3px;flex:0 0 auto;}
+  .priority-row .prio-color-input{
+    width:30px;height:30px;
+    flex:0 0 auto;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:2px;
+    background:none;
+  }
+  .priority-row .prio-reset{
+    background:none;border:none;color:var(--muted);
+    font-size:14px;padding:4px 6px;flex:0 0 auto;
+  }
   .priority-row .prio-label{flex:1;font-size:13.5px;font-weight:600;}
   .priority-row .prio-arrows{display:flex;gap:4px;}
   .priority-row .prio-arrows button{
@@ -152,20 +236,76 @@
     overflow:hidden;
   }
   .filter-bar{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
+    display:flex;
+    gap:6px;
     margin-bottom:4px;
+    overflow-x:auto;
+    padding-bottom:2px;
+    scrollbar-width:none;
   }
+  .filter-bar::-webkit-scrollbar{display:none;}
   .filter-bar select{
-    font-size:12.5px;
-    padding:9px 8px;
+    flex:0 0 auto;
+    width:auto;
+    min-width:108px;
+    font-size:12px;
+    padding:8px 7px;
   }
-  #weekFilterSection{
+  .filter-chip-btn{
+    flex:0 0 auto;
     background:var(--surface);
     border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:10px 12px 12px;
+    border-radius:999px;
+    padding:8px 13px;
+    font-size:12px;
+    color:var(--ink);
+    font-weight:600;
+  }
+  .filter-chip-btn.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  #filterMultiPanel{
+    background:#F4F7F6;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    padding:8px;
+    margin-top:8px;
+  }
+  #filterMultiPanel #filterMultiList{max-height:240px;overflow-y:auto;}
+  #filterMultiPanel .picker-actions{justify-content:space-between;}
+  .prog-lower{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .unscheduled-wrap{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  #toggleUnscheduledBtn{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:6px 10px;
+    align-self:flex-start;
+    white-space:nowrap;
+    width:max-content;
+  }
+  #unscheduledSection{
+    flex:0 0 auto;
+    width:295px;
+    min-width:0;
+  }
+  #unscheduledSection.hidden{display:none;}
+  .tickets-scroller{
+    flex:1;
+    min-width:0;
+    overflow-x:auto;
+    padding-bottom:8px;
   }
   .ruta-group{
     background:var(--surface);
@@ -212,47 +352,165 @@
   }
   .client-row:last-child{border-bottom:none;}
   .client-row.pickable{cursor:pointer;}
+  .client-row-clickable{cursor:pointer;}
   .client-row.pickable:active{background:var(--bg);}
   .client-info .cname{font-size:13.5px;font-weight:600;}
   .client-info .cmeta{font-size:11.5px;color:var(--muted);margin-top:1px;}
 
-  /* Day cards (Programación tab) */
+  /* Day cards (Programación tab) — estilo inspirado en la hoja de Excel del usuario */
+  :root{
+    --daystrip-bg:#6FA8DC;
+    --daystrip-ink:#1F3864;
+    --route-ink:#8B2635;
+    --gridline:#BBD3E8;
+  }
   .tickets{
-    display:grid;
-    grid-template-columns:1fr 1fr;
+    display:flex;
+    flex-direction:column;
     gap:10px;
   }
-  .ticket.ticket-expanded{
-    grid-column:1 / -1;
+  .week-row{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .week-title-strip{
+    flex:0 0 auto;
+    width:34px;
+    min-height:150px;
+    background:#E8A79A;
+    border-radius:var(--radius);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .week-title-strip-inner{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transform:rotate(-90deg);
+    white-space:nowrap;
+  }
+  .week-title-text{
+    font-weight:700;
+    font-size:17px;
+    color:#7A2E1E;
+    letter-spacing:0.3px;
+  }
+  .week-title-strip.unset .week-title-text{
+    color:#A6432F;
+    font-weight:600;
+  }
+  .week-row-days{
+    display:flex;
+    gap:8px;
+  }
+  .week-row-days .ticket{
+    flex:0 0 336px;
   }
   .ticket{
     min-width:0;
     position:relative;
+    display:flex;
     background:var(--surface);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    padding:12px 14px;
+    overflow:hidden;
+    padding:0;
+  }
+  .day-strip{
+    flex:0 0 auto;
+    width:34px;
+    background:var(--daystrip-bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .day-strip .day-strip-inner{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    transform:rotate(-90deg);
+    white-space:nowrap;
+  }
+  .day-strip .day-strip-inner span.day-name-text{
+    font-weight:700;
+    color:var(--daystrip-ink);
+    font-size:17.5px;
+    letter-spacing:0.4px;
+  }
+  .day-actions button:disabled{opacity:0.25;}
+  .ticket-body{
+    flex:1;
+    min-width:0;
+    padding:8px 10px;
   }
   .ticket-head{
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:space-between;
+    gap:6px;
     margin-bottom:2px;
   }
-  .ticket-head .day-name{
+  .route-header{
+    flex:1;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    cursor:pointer;
+  }
+  .route-header .route-title{
     font-family:Georgia,serif;
     font-weight:700;
-    font-size:15.5px;
+    font-size:14.5px;
+    color:var(--route-ink);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
-  .ticket-head .day-actions button{
+  .route-header .route-title.unset{
+    color:var(--accent);
+    font-size:12.5px;
+    font-weight:600;
+  }
+  .route-header .route-caret{
+    color:#fff;
+    background:var(--accent);
+    border-radius:6px;
+    font-size:13px;
+    flex:0 0 auto;
+    padding:5px 9px;
+    line-height:1;
+  }
+  .day-filter-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .day-filter-row .filter-chip-btn{
+    font-size:10.5px;
+    padding:5px 8px;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .day-actions{display:flex;gap:0;flex:0 0 auto;}
+  .day-actions button{
     background:none;border:none;color:var(--muted);
-    font-size:13px;padding:4px 6px;
+    font-size:12.5px;padding:3px 5px;
   }
-  .ticket-head .day-actions button.trash{color:var(--danger);}
+  .day-actions button.trash{color:var(--danger);}
   .day-name-input{
     font-family:Georgia,serif;
     font-weight:700;
-    font-size:15.5px;
+    font-size:14.5px;
     border:none;
     border-bottom:1px solid var(--accent);
     background:transparent;
@@ -262,105 +520,78 @@
     flex:1;
     margin-right:8px;
   }
-  .day-route{
-    font-size:11.5px;
-    color:var(--muted);
-    margin-bottom:6px;
-    cursor:pointer;
-  }
-  .day-route.unset{color:var(--accent);font-weight:600;}
-  #routeConfigPanel{
-    background:var(--surface);
-    border:1px solid var(--accent);
-    border-radius:var(--radius);
-    padding:10px;
-    margin-top:12px;
-  }
-  #routeConfigPanel .picker-title{font-size:13px;font-weight:700;margin-bottom:8px;}
   .day-fill-count{
-    font-size:11px;
-    color:var(--warm);
-    font-weight:700;
-    margin-bottom:6px;
-  }
-  .ticket.collapsed{
-    aspect-ratio:1 / 1;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-    cursor:pointer;
-    padding:10px 12px;
-  }
-  .ticket.collapsed .expand-hint{
-    position:absolute;
-    top:6px;right:8px;
-    color:var(--muted);
-    font-size:13px;
-  }
-  .ticket.collapsed .collapsed-title{
-    font-family:Georgia,serif;
-    font-weight:700;
-    font-size:13.5px;
-    padding-right:14px;
-  }
-  .ticket.collapsed .collapsed-route{
-    font-size:10px;
-    color:var(--muted);
-    margin-top:2px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .ticket.collapsed .collapsed-count{
     font-size:10.5px;
     color:var(--warm);
     font-weight:700;
-    margin:4px 0 3px;
-  }
-  .ticket.collapsed .collapsed-list{
-    font-size:10.5px;
-    line-height:1.45;
-    color:var(--ink);
-    overflow:hidden;
-    flex:1;
-  }
-  .ticket.collapsed .collapsed-list div{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    margin-bottom:4px;
   }
   .slot-row{
     display:flex;
     align-items:center;
-    gap:8px;
-    padding:6px 2px;
-    border-bottom:1px solid var(--line);
+    padding:6px 0;
+    border-bottom:1px solid var(--gridline);
   }
   .slot-row:last-child{border-bottom:none;}
-  .slot-num{
-    width:16px;
-    flex:0 0 auto;
-    font-size:11px;
-    color:var(--muted);
-    font-weight:700;
-    text-align:right;
-  }
   .slot-name{
     flex:1;
-    font-size:13.5px;
+    min-width:0;
+    font-size:13px;
     font-weight:600;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
+    padding-right:6px;
+  }
+  .slot-name-clickable{cursor:pointer;}
+  .slot-copy{
+    background:none;border:none;color:var(--muted);
+    font-size:13px;line-height:1;padding:2px 5px;flex:0 0 auto;
   }
   .slot-empty{
     flex:1;
-    min-height:18px;
-    border-bottom:1px dashed var(--line);
+    min-height:16px;
   }
+  .slot-num{
+    flex:0 0 auto;
+    width:20px;
+    text-align:center;
+    font-size:11px;
+    color:#3E6E9E;
+    font-weight:700;
+    padding-right:4px;
+  }
+  .slot-move{
+    display:flex;
+    flex-direction:column;
+    flex:0 0 auto;
+  }
+  .slot-move button{
+    background:none;border:none;color:var(--muted);
+    font-size:9px;line-height:1;padding:1px 4px;
+  }
+  .slot-move button:disabled{opacity:0.25;}
   .slot-remove{
     background:none;border:none;color:var(--danger);
-    font-size:16px;line-height:1;padding:2px 6px;flex:0 0 auto;
+    font-size:15px;line-height:1;padding:2px 4px 2px 6px;flex:0 0 auto;
+  }
+  .client-detail-card{
+    background:#F4F7F6;
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:6px;
+    padding:8px 10px;
+    margin:2px 0 8px;
+    font-size:12px;
+  }
+  .client-detail-card .detail-row{
+    padding:2px 0;
+    line-height:1.4;
+  }
+  .client-detail-card .detail-label{
+    font-weight:700;
+    color:var(--muted);
+    margin-right:4px;
   }
   .add-day-card{
     display:flex;
@@ -385,7 +616,28 @@
     margin:4px 0 8px;
   }
   .inline-picker .search-row{margin-bottom:6px;}
+  .picker-actions-top{
+    justify-content:flex-end;
+    margin-bottom:4px;
+  }
   .inline-picker .client-list-flat{max-height:260px;overflow-y:auto;}
+  .delete-confirm-panel .delete-option{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 10px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .delete-confirm-panel .delete-option-week{
+    color:var(--danger);
+    border-color:var(--danger);
+  }
   #inlinePickerNote{
     font-size:11px;
     color:var(--accent);
@@ -536,11 +788,19 @@
 <body>
 
 <header class="app-header">
-  <h1>Planificador CGS</h1>
-  <div class="sub" id="monthLabel">Cargando...</div>
+  <div class="app-header-row">
+    <div>
+      <h1>Planificador CGS <span id="appVersionTag" class="app-version-tag"></span></h1>
+      <div class="sub" id="monthLabel">Cargando...</div>
+    </div>
+    <button id="toggleReorderBtn" class="reorder-toggle-btn">☰ Mover</button>
+  </div>
 </header>
 
-<div class="week-strip" id="weekStrip"></div>
+<div class="week-strip-row" id="weekStripRow">
+  <div class="week-strip" id="weekStrip"></div>
+  <button class="btn-mini" id="toggleFilterBtn">Filtro ▾</button>
+</div>
 
 <main>
   <!-- VISTA: CLIENTES -->
@@ -585,33 +845,52 @@
     <section id="ticketsEmptyState" style="display:none;">
       <div class="empty-state">Primero importa tus clientes en la pestaña "Clientes".</div>
     </section>
-    <section id="weekFilterSection" style="display:none;">
-      <div class="section-title">
-        <span>Filtro de clientes para esta semana</span>
-        <button class="btn-mini" id="clearWeekFilterBtn">Quitar filtros</button>
-      </div>
-      <div class="filter-bar">
-        <select id="filterRuta"></select>
-        <select id="filterDepartamento"></select>
-        <select id="filterMunicipio"></select>
-        <select id="filterPrioridad"></select>
-        <select id="filterSort"></select>
-      </div>
-    </section>
-    <section id="ticketsSection">
-      <div class="tickets" id="ticketsGrid"></div>
-      <div style="margin-top:12px;">
-        <button class="add-day-card" id="addDayBtn">+ Agregar día</button>
-      </div>
-      <div id="routeConfigPanel" style="display:none;">
-        <div class="picker-title" id="routeConfigTitle">Configurar ruta(s) del día</div>
-        <div id="routeConfigList"></div>
-        <div class="picker-actions">
-          <button class="btn-mini" id="routeConfigCancel">Cancelar</button>
-          <button id="routeConfigSave">Guardar</button>
+    <div id="progLayout" style="display:none;">
+      <section id="weekFilterSection">
+        <div id="filterBarWrap" style="display:none;">
+          <div class="filter-bar">
+            <button class="filter-chip-btn" id="btnFilterRuta">Ruta</button>
+            <button class="filter-chip-btn" id="btnFilterDepartamento">Departamento</button>
+            <button class="filter-chip-btn" id="btnFilterMunicipio">Municipio</button>
+            <button class="filter-chip-btn" id="btnFilterPrioridad">Prioridad</button>
+            <button class="btn-mini" id="clearWeekFilterBtn">Quitar</button>
+          </div>
+          <div class="filter-bar">
+            <select id="filterSort1"></select>
+            <select id="filterSort2"></select>
+            <select id="filterSort3"></select>
+          </div>
+        </div>
+        <div id="filterMultiPanel" style="display:none;">
+          <div class="picker-title" id="filterMultiTitle">Filtrar</div>
+          <div id="filterMultiList"></div>
+          <div class="picker-actions">
+            <button class="btn-mini" id="filterMultiClear">Limpiar</button>
+            <span>
+              <button class="btn-mini" id="filterMultiCancel">Cancelar</button>
+              <button id="filterMultiDone">Listo</button>
+            </span>
+          </div>
+        </div>
+      </section>
+      <div class="prog-lower">
+        <div class="unscheduled-wrap" id="unscheduledWrap">
+          <button class="btn-mini" id="toggleUnscheduledBtn">◂ Contraer</button>
+          <section id="unscheduledSection">
+            <div class="section-title">
+              <span>Sin programar <span id="unscheduledCount"></span></span>
+            </div>
+            <div id="unscheduledList" class="simple-list scrollable-list"></div>
+          </section>
+        </div>
+        <div class="tickets-scroller">
+          <div class="tickets" id="ticketsGrid"></div>
         </div>
       </div>
-    </section>
+      <div style="margin-top:12px;">
+        <button class="add-day-card" id="addDayBtn">+ Agregar semana (5 días)</button>
+      </div>
+    </div>
   </div>
 
   <!-- VISTA: CALENDARIO -->
@@ -663,6 +942,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
 /* =========================================================
    PLANIFICADOR CGS
@@ -674,7 +954,10 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
+const APP_VERSION = 'v21';
 const SLOTS_PER_DAY = 10;
+const DAYS_PER_SEMANA = 5;
+const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
 const DIAS = [
   {key:'martes',  label:'Martes'},
@@ -730,8 +1013,8 @@ let state = {
   sortMode: 'nombre',
   groupMode: 'ruta',
   slotPicker: { open:false, dayId:null, slotIndex:null, openGroups:new Set() },
-  expandedDays: new Set(),
-  priorityOrder: null
+  priorityOrder: null,
+  priorityColors: null
 };
 
 function todayMonthKey(){
@@ -757,18 +1040,29 @@ function normalizePriority(p){
 }
 
 function priorityStyle(p){
-  const style = PRIORITY_STYLES[normalizePriority(p)];
+  const key = normalizePriority(p);
+  const style = PRIORITY_STYLES[key];
   if(!style) return '';
+  const color = state.priorityColors ? state.priorityColors[key] : style.color;
   let css = '';
-  if(style.color) css += `color:${style.color};`;
+  if(color) css += `color:${color};`;
   if(style.strike) css += 'text-decoration:line-through;';
   return css;
+}
+
+const LS_PRIORITY_COLORS = 'pcgs_priority_colors';
+
+function defaultPriorityColors(){
+  const colors = {};
+  PRIORITY_RANK.forEach(k=> colors[k] = PRIORITY_STYLES[k] ? PRIORITY_STYLES[k].color : null);
+  return colors;
 }
 
 function save(){
   localStorage.setItem(LS_CLIENTES, JSON.stringify(state.clientes));
   localStorage.setItem(LS_MESES, JSON.stringify(state.meses));
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
+  localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
 }
 
 function load(){
@@ -780,6 +1074,11 @@ function load(){
     const isValid = Array.isArray(stored) && stored.length===PRIORITY_RANK.length && stored.every(k=>validSet.has(k));
     state.priorityOrder = isValid ? stored : PRIORITY_RANK.slice();
   }catch(e){ state.priorityOrder = PRIORITY_RANK.slice(); }
+  try{
+    const storedColors = JSON.parse(localStorage.getItem(LS_PRIORITY_COLORS));
+    const defaults = defaultPriorityColors();
+    state.priorityColors = (storedColors && typeof storedColors==='object') ? Object.assign(defaults, storedColors) : defaults;
+  }catch(e){ state.priorityColors = defaultPriorityColors(); }
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
@@ -792,7 +1091,7 @@ function toClientSlots(ids){
 }
 
 function defaultWeekFilter(){
-  return { ruta:'', departamento:'', municipio:'', prioridad:'', sort:'nombre' };
+  return { rutas:[], departamentos:[], municipios:[], prioridades:[], sort1:'nombre', sort2:'', sort3:'' };
 }
 
 function migrateOldData(){
@@ -810,7 +1109,7 @@ function migrateOldData(){
         delete week.slots;
         migrated = true;
       } else if(!week.days){
-        week.days = DIAS.map(d => ({ id:newDayId(), title:d.label, rutas:[], clientSlots: emptySlots() }));
+        week.days = DIAS.map(d => ({ id:newDayId(), title:d.label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() }));
         migrated = true;
       }
       week.days.forEach(day=>{
@@ -823,9 +1122,33 @@ function migrateOldData(){
           day.rutas = [];
           migrated = true;
         }
+        if(!day.sectores){
+          day.sectores = [];
+          migrated = true;
+        }
+        if(day.titulo===undefined){
+          day.titulo = '';
+          migrated = true;
+        }
       });
       if(!week.filtro){
         week.filtro = defaultWeekFilter();
+        migrated = true;
+      } else if(!Array.isArray(week.filtro.rutas)){
+        const old = week.filtro;
+        week.filtro = {
+          rutas: old.ruta ? [old.ruta] : [],
+          departamentos: old.departamento ? [old.departamento] : [],
+          municipios: old.municipio ? [old.municipio] : [],
+          prioridades: old.prioridad ? [old.prioridad] : [],
+          sort1: old.sort || 'nombre',
+          sort2: '',
+          sort3: ''
+        };
+        migrated = true;
+      }
+      if(!week.semanaTitulos){
+        week.semanaTitulos = [];
         migrated = true;
       }
     });
@@ -841,10 +1164,40 @@ function ensureMonth(key){
 
 function newWeek(n){
   return {
-    label: 'Semana ' + n,
+    label: 'Mes ' + n,
     filtro: defaultWeekFilter(),
-    days: DIAS.map(d => ({ id:newDayId(), title:d.label, rutas:[], clientSlots: emptySlots() }))
+    semanaTitulos: [],
+    days: DIAS.map(d => ({ id:newDayId(), title:d.label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() }))
   };
+}
+
+function duplicateWeek(week){
+  const clone = JSON.parse(JSON.stringify(week));
+  clone.label = 'Copia de ' + week.label;
+  clone.days.forEach(d=> d.id = newDayId());
+  return clone;
+}
+
+function getSemanaGroups(week){
+  const groups = [];
+  for(let idx=0; idx<week.days.length; idx+=DAYS_PER_SEMANA){
+    groups.push({
+      titulo: week.semanaTitulos[idx/DAYS_PER_SEMANA] || '',
+      days: week.days.slice(idx, idx+DAYS_PER_SEMANA)
+    });
+  }
+  return groups;
+}
+
+function setSemanaGroups(week, groups){
+  const newDays = [];
+  const newTitulos = [];
+  groups.forEach(g=>{
+    newDays.push(...g.days);
+    newTitulos.push(g.titulo);
+  });
+  week.days = newDays;
+  week.semanaTitulos = newTitulos;
 }
 
 function ensureCurrentDayKey(){
@@ -877,36 +1230,113 @@ function toast(msg){
 /* ---------- RENDER: header / semanas ---------- */
 function renderHeader(){
   document.getElementById('monthLabel').textContent = monthLabel(state.currentMonthKey);
+  document.getElementById('appVersionTag').textContent = APP_VERSION;
 }
 
 function renderWeekStrip(){
   const strip = document.getElementById('weekStrip');
+  const row = document.getElementById('weekStripRow');
   const hideStrip = state.currentView==='clientes' || state.currentView==='listas';
-  strip.classList.toggle('hidden', hideStrip);
+  row.classList.toggle('hidden', hideStrip);
   if(hideStrip) return;
   strip.innerHTML = '';
-  currentMonth().weeks.forEach((w, i)=>{
-    const pill = document.createElement('button');
-    pill.className = 'week-pill' + (i===state.currentWeekIndex ? ' active':'');
+
+  const pillsList = document.createElement('div');
+  pillsList.className = 'week-pills-list';
+  pillsList.id = 'weekPillsList';
+  strip.appendChild(pillsList);
+
+  const weeks = currentMonth().weeks;
+  weeks.forEach((w, i)=>{
     const isActive = i===state.currentWeekIndex;
-    pill.innerHTML = `<span class="week-name-text">${w.label}</span>` + (isActive ? '<span class="edit-pencil">✎</span>' : '');
-    pill.onclick = (e)=>{
-      if(e.target.classList.contains('edit-pencil') && isActive){
-        startEditWeekName(pill, w);
-        return;
-      }
+    const pill = document.createElement('button');
+    pill.className = 'week-pill' + (isActive ? ' active':'');
+
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle month-drag-handle';
+    handle.title = 'Arrastrar para reordenar';
+    handle.textContent = reorderModeActive ? '☰' : '🗂️';
+    pill.appendChild(handle);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'week-name-text';
+    nameSpan.textContent = w.label;
+    pill.appendChild(nameSpan);
+
+    const pencil = document.createElement('span');
+    pencil.className = 'edit-pencil';
+    pencil.title = 'Renombrar';
+    pencil.textContent = '✎';
+    pencil.onclick = (e)=>{
+      e.stopPropagation();
+      startEditWeekName(pill, w);
+    };
+    pill.appendChild(pencil);
+
+    const dup = document.createElement('span');
+    dup.className = 'move-week duplicate-week';
+    dup.title = 'Duplicar este mes';
+    dup.textContent = '⧉';
+    dup.onclick = (e)=>{
+      e.stopPropagation();
+      const clone = duplicateWeek(w);
+      weeks.splice(i+1, 0, clone);
+      state.currentWeekIndex = i+1;
+      save();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    };
+    pill.appendChild(dup);
+
+    const del = document.createElement('span');
+    del.className = 'move-week delete-week';
+    del.title = 'Eliminar este mes';
+    del.textContent = '🗑';
+    del.onclick = (e)=>{
+      e.stopPropagation();
+      if(!confirm(`¿Eliminar "${w.label}" con todo su contenido (semanas, rutas y clientes asignados)? Esta acción no se puede deshacer.`)) return;
+      const activeWeek = weeks[state.currentWeekIndex];
+      weeks.splice(i,1);
+      if(weeks.length===0) weeks.push(newWeek(1));
+      const newActiveIdx = weeks.indexOf(activeWeek);
+      state.currentWeekIndex = newActiveIdx!==-1 ? newActiveIdx : Math.max(0, Math.min(i, weeks.length-1));
+      save();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    };
+    pill.appendChild(del);
+
+    pill.onclick = ()=>{
       state.currentWeekIndex = i;
       closeSlotPicker();
       renderTickets();
       renderCalendarView();
     };
-    strip.appendChild(pill);
+    pillsList.appendChild(pill);
   });
+
+  if(reorderModeActive){
+    new Sortable(pillsList, {
+      handle: '.month-drag-handle',
+      animation: 150,
+      onEnd: (evt)=>{
+        const weeks2 = currentMonth().weeks;
+        const activeWeek = weeks2[state.currentWeekIndex];
+        const moved = weeks2.splice(evt.oldIndex,1)[0];
+        weeks2.splice(evt.newIndex,0,moved);
+        state.currentWeekIndex = weeks2.indexOf(activeWeek);
+        save();
+        renderWeekStrip();
+      }
+    });
+  }
+
   const addBtn = document.createElement('button');
   addBtn.className = 'week-pill add';
-  addBtn.textContent = '+ Semana';
+  addBtn.textContent = '+ Mes';
   addBtn.onclick = ()=>{
-    const weeks = currentMonth().weeks;
     weeks.push(newWeek(weeks.length+1));
     state.currentWeekIndex = weeks.length-1;
     save();
@@ -918,22 +1348,12 @@ function renderWeekStrip(){
 }
 
 function startEditWeekName(pill, week){
-  pill.innerHTML = '';
-  const input = document.createElement('input');
-  input.className = 'week-name-input';
-  input.value = week.label;
-  pill.appendChild(input);
-  input.focus();
-  input.select();
-  const commit = ()=>{
-    const v = input.value.trim();
-    if(v) week.label = v;
+  const v = prompt('Nombre de la semana:', week.label);
+  if(v && v.trim()){
+    week.label = v.trim();
     save();
     renderWeekStrip();
-  };
-  input.onblur = commit;
-  input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); };
-  input.onclick = (e)=> e.stopPropagation();
+  }
 }
 
 /* ---------- clientes: helpers compartidos ---------- */
@@ -964,6 +1384,15 @@ function getAllRoutes(){
   return [...new Set(state.clientes.map(c=>c.ruta).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
 }
 
+function getAllSectores(){
+  return [...new Set(state.clientes.map(c=>c.sector).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function getSectoresForDay(day){
+  const pool = state.clientes.filter(c => !day.rutas.length || day.rutas.includes(c.ruta));
+  return [...new Set(pool.map(c=>c.sector).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+
 function getAllDepartamentos(){
   return [...new Set(state.clientes.map(c=>c.departamento).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
 }
@@ -978,103 +1407,218 @@ const PRIORITY_LABELS = {
 };
 
 function getDepartamentosFor(wf){
-  const pool = state.clientes.filter(c => !wf.ruta || c.ruta===wf.ruta);
+  const pool = state.clientes.filter(c => !wf.rutas.length || wf.rutas.includes(c.ruta));
   return [...new Set(pool.map(c=>c.departamento).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
 }
 
 function getMunicipiosFor(wf){
   const pool = state.clientes.filter(c =>
-    (!wf.ruta || c.ruta===wf.ruta) && (!wf.departamento || c.departamento===wf.departamento)
+    (!wf.rutas.length || wf.rutas.includes(c.ruta)) &&
+    (!wf.departamentos.length || wf.departamentos.includes(c.departamento))
   );
   return [...new Set(pool.map(c=>c.sector).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
 }
 
-function sortForWeekFilter(list, mode){
-  const arr = list.slice();
-  if(mode==='ruta'){
-    arr.sort((a,b)=> (a.ruta||'').localeCompare(b.ruta||'', 'es'));
-  } else if(mode==='municipio'){
-    arr.sort((a,b)=> (a.sector||'').localeCompare(b.sector||'', 'es'));
-  } else if(mode==='prioridad'){
-    arr.sort((a,b)=>{
-      const ra = state.priorityOrder.indexOf(normalizePriority(a.prioridad));
-      const rb = state.priorityOrder.indexOf(normalizePriority(b.prioridad));
-      return (ra===-1?999:ra) - (rb===-1?999:rb);
-    });
-  } else {
-    arr.sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||'', 'es'));
+function compareByField(a, b, field){
+  if(field==='ruta') return (a.ruta||'').localeCompare(b.ruta||'', 'es');
+  if(field==='departamento') return (a.departamento||'').localeCompare(b.departamento||'', 'es');
+  if(field==='municipio') return (a.sector||'').localeCompare(b.sector||'', 'es');
+  if(field==='prioridad'){
+    const ra = state.priorityOrder.indexOf(normalizePriority(a.prioridad));
+    const rb = state.priorityOrder.indexOf(normalizePriority(b.prioridad));
+    return (ra===-1?999:ra) - (rb===-1?999:rb);
   }
+  return (a.nombre||'').localeCompare(b.nombre||'', 'es');
+}
+
+function sortForWeekFilter(list, wf){
+  const levels = [wf.sort1, wf.sort2, wf.sort3].filter(Boolean);
+  if(levels.length===0) levels.push('nombre');
+  const arr = list.slice();
+  arr.sort((a,b)=>{
+    for(const lvl of levels){
+      const c = compareByField(a, b, lvl);
+      if(c!==0) return c;
+    }
+    return 0;
+  });
   return arr;
 }
 
-function renderWeekFilterBar(){
+let filterBarExpanded = false;
+
+function renderWeekFilterControls(){
   const week = currentWeek();
   const wf = week.filtro;
 
-  const rutaSel = document.getElementById('filterRuta');
-  const depSel = document.getElementById('filterDepartamento');
-  const munSel = document.getElementById('filterMunicipio');
-  const prioSel = document.getElementById('filterPrioridad');
-  const sortSel = document.getElementById('filterSort');
+  const activeCount = wf.rutas.length + wf.departamentos.length + wf.municipios.length + wf.prioridades.length;
+  const toggleBtn = document.getElementById('toggleFilterBtn');
+  toggleBtn.textContent = `Filtro${activeCount>0 ? ' ('+activeCount+')' : ''} ${filterBarExpanded ? '▴' : '▾'}`;
+  toggleBtn.onclick = ()=>{
+    filterBarExpanded = !filterBarExpanded;
+    document.getElementById('filterBarWrap').style.display = filterBarExpanded ? 'block' : 'none';
+    renderWeekFilterControls();
+  };
+  document.getElementById('filterBarWrap').style.display = filterBarExpanded ? 'block' : 'none';
 
-  const routes = getAllRoutes();
-  const departamentos = getDepartamentosFor(wf);
-  const municipios = getMunicipiosFor(wf);
+  const setChip = (btnId, label, field, options, isPriority)=>{
+    const btn = document.getElementById(btnId);
+    const arr = wf[field];
+    btn.textContent = arr.length>0 ? `${label} (${arr.length})` : label;
+    btn.classList.toggle('active', arr.length>0);
+    btn.onclick = ()=> openFilterMultiPanel(field, label, options, isPriority);
+  };
 
-  rutaSel.innerHTML = `<option value="">Ruta: Todas</option>` +
-    routes.map(r=>`<option value="${r}">${r}</option>`).join('');
-  depSel.innerHTML = `<option value="">Departamento: Todos</option>` +
-    departamentos.map(d=>`<option value="${d}">${d}</option>`).join('');
-  munSel.innerHTML = `<option value="">Municipio: Todos</option>` +
-    municipios.map(m=>`<option value="${m}">${m}</option>`).join('');
-  prioSel.innerHTML = `<option value="">Prioridad: Todas</option>` +
-    Object.keys(PRIORITY_LABELS).map(k=>`<option value="${k}">${PRIORITY_LABELS[k]}</option>`).join('');
-  sortSel.innerHTML = `
-    <option value="nombre">Ordenar por: Nombre A-Z</option>
-    <option value="ruta">Ordenar por: Ruta</option>
-    <option value="municipio">Ordenar por: Sector</option>
-    <option value="prioridad">Ordenar por: Prioridad</option>
-  `;
+  setChip('btnFilterRuta', 'Ruta', 'rutas', getAllRoutes(), false);
+  setChip('btnFilterDepartamento', 'Departamento', 'departamentos', getDepartamentosFor(wf), false);
+  setChip('btnFilterMunicipio', 'Municipio', 'municipios', getMunicipiosFor(wf), false);
+  setChip('btnFilterPrioridad', 'Prioridad', 'prioridades', Object.keys(PRIORITY_LABELS), true);
 
-  rutaSel.value = wf.ruta || '';
-  depSel.value = wf.departamento || '';
-  munSel.value = wf.municipio || '';
-  prioSel.value = wf.prioridad || '';
-  sortSel.value = wf.sort || 'nombre';
-
-  rutaSel.onchange = ()=>{
-    wf.ruta = rutaSel.value;
-    wf.departamento = '';
-    wf.municipio = '';
-    save();
-    renderTickets();
-  };
-  depSel.onchange = ()=>{
-    wf.departamento = depSel.value;
-    wf.municipio = '';
-    save();
-    renderTickets();
-  };
-  munSel.onchange = ()=>{
-    wf.municipio = munSel.value;
-    save();
-    renderTickets();
-  };
-  prioSel.onchange = ()=>{
-    wf.prioridad = prioSel.value;
-    save();
-    renderTickets();
-  };
-  sortSel.onchange = ()=>{
-    wf.sort = sortSel.value;
-    save();
-    renderTickets();
-  };
   document.getElementById('clearWeekFilterBtn').onclick = ()=>{
     week.filtro = defaultWeekFilter();
     save();
+    renderWeekFilterControls();
     renderTickets();
   };
+
+  const sortFieldOptions = [
+    {v:'nombre', l:'Nombre A-Z'},
+    {v:'ruta', l:'Ruta'},
+    {v:'departamento', l:'Departamento'},
+    {v:'municipio', l:'Sector'},
+    {v:'prioridad', l:'Prioridad'}
+  ];
+  const s1 = document.getElementById('filterSort1');
+  const s2 = document.getElementById('filterSort2');
+  const s3 = document.getElementById('filterSort3');
+  s1.innerHTML = sortFieldOptions.map(o=>`<option value="${o.v}">1º orden: ${o.l}</option>`).join('');
+  s2.innerHTML = `<option value="">2º orden: ninguno</option>` +
+    sortFieldOptions.map(o=>`<option value="${o.v}">2º orden: ${o.l}</option>`).join('');
+  s3.innerHTML = `<option value="">3º orden: ninguno</option>` +
+    sortFieldOptions.map(o=>`<option value="${o.v}">3º orden: ${o.l}</option>`).join('');
+  s1.value = wf.sort1 || 'nombre';
+  s2.value = wf.sort2 || '';
+  s3.value = wf.sort3 || '';
+  s1.onchange = ()=>{ wf.sort1 = s1.value || 'nombre'; save(); renderTickets(); };
+  s2.onchange = ()=>{ wf.sort2 = s2.value; save(); renderTickets(); };
+  s3.onchange = ()=>{ wf.sort3 = s3.value; save(); renderTickets(); };
+}
+
+function renderWeekFilterControls_refresh(){
+  renderWeekFilterControls();
+  renderTickets();
+}
+
+
+let filterPanelState = null;
+let reorderModeActive = false;
+
+function setReorderMode(active){
+  reorderModeActive = active;
+  const btn = document.getElementById('toggleReorderBtn');
+  btn.classList.toggle('active', reorderModeActive);
+  btn.textContent = reorderModeActive ? '☰ Moviendo…' : '☰ Mover';
+  renderWeekStrip();
+  renderTickets();
+}
+
+document.getElementById('toggleReorderBtn').onclick = ()=>{
+  setReorderMode(!reorderModeActive);
+};
+
+document.addEventListener('click', (e)=>{
+  if(reorderModeActive && !e.target.closest('.drag-handle') && e.target.id!=='toggleReorderBtn'){
+    setReorderMode(false);
+  }
+});
+
+function openFilterMultiPanel(field, label, options, isPriority){
+  const week = currentWeek();
+  filterPanelState = { field, options, isPriority, temp: new Set(week.filtro[field]) };
+  document.getElementById('filterMultiPanel').style.display = 'block';
+  document.getElementById('filterMultiTitle').textContent = `Filtrar por ${label}`;
+  renderFilterMultiList();
+  document.getElementById('filterMultiPanel').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function renderFilterMultiList(){
+  const wrap = document.getElementById('filterMultiList');
+  wrap.innerHTML = '';
+  if(filterPanelState.options.length===0){
+    wrap.innerHTML = `<div class="empty-state">No hay opciones disponibles.</div>`;
+    return;
+  }
+  filterPanelState.options.forEach(opt=>{
+    const label = filterPanelState.isPriority ? PRIORITY_LABELS[opt] : opt;
+    const row = document.createElement('div');
+    row.className = 'client-row pickable';
+    row.innerHTML = `
+      <input type="checkbox" ${filterPanelState.temp.has(opt)?'checked':''} style="width:18px;height:18px;flex:0 0 auto;">
+      <div class="client-info"><div class="cname">${label}</div></div>
+    `;
+    const cb = row.querySelector('input');
+    row.onclick = (e)=>{
+      if(e.target!==cb) cb.checked = !cb.checked;
+      if(cb.checked) filterPanelState.temp.add(opt);
+      else filterPanelState.temp.delete(opt);
+    };
+    wrap.appendChild(row);
+  });
+}
+
+document.getElementById('filterMultiClear').onclick = ()=>{
+  filterPanelState.temp.clear();
+  renderFilterMultiList();
+};
+
+document.getElementById('filterMultiDone').onclick = ()=>{
+  const week = currentWeek();
+  const field = filterPanelState.field;
+  week.filtro[field] = Array.from(filterPanelState.temp);
+  if(field==='rutas'){ week.filtro.departamentos = []; week.filtro.municipios = []; }
+  if(field==='departamentos'){ week.filtro.municipios = []; }
+  document.getElementById('filterMultiPanel').style.display = 'none';
+  filterPanelState = null;
+  save();
+  renderWeekFilterControls_refresh();
+};
+
+document.getElementById('filterMultiCancel').onclick = ()=>{
+  document.getElementById('filterMultiPanel').style.display = 'none';
+  filterPanelState = null;
+};
+
+let unscheduledCollapsed = false;
+
+function renderUnscheduledList(){
+  const week = currentWeek();
+  const wf = week.filtro;
+  const excludeIds = assignedClientIdsThisWeek();
+  const clients = getEligibleClientsForPicker('', null, null, wf, excludeIds);
+
+  document.getElementById('unscheduledCount').textContent = `(${clients.length})`;
+
+  const section = document.getElementById('unscheduledSection');
+  const toggleBtn = document.getElementById('toggleUnscheduledBtn');
+  section.classList.toggle('hidden', unscheduledCollapsed);
+  toggleBtn.textContent = unscheduledCollapsed ? `▸ (${clients.length})` : '◂ Contraer';
+  toggleBtn.onclick = ()=>{
+    unscheduledCollapsed = !unscheduledCollapsed;
+    renderUnscheduledList();
+  };
+
+  const wrap = document.getElementById('unscheduledList');
+
+  if(clients.length===0){
+    wrap.className = '';
+    wrap.innerHTML = `<div class="empty-state">Todos los clientes que coinciden con el filtro ya están programados esta semana.</div>`;
+    return;
+  }
+
+  wrap.className = 'simple-list scrollable-list';
+  wrap.innerHTML = clients.map((c,i)=>`
+    <div class="simple-row" style="${priorityStyle(c.prioridad)}">${i+1}. ${c.nombre||'(sin nombre)'}</div>
+  `).join('');
 }
 
 function sortClients(list){
@@ -1115,13 +1659,19 @@ function renderClientGroupList(opts){
 
   function buildClientRow(c){
     const row = document.createElement('div');
-    row.className = 'client-row';
+    row.className = 'client-row client-row-clickable';
     row.innerHTML = `
       <div class="client-info">
         <div class="cname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
         <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
       </div>
     `;
+    const id = c.idCliente || c.idSistema;
+    row.onclick = (e)=>{
+      e.stopPropagation();
+      expandedBrowseClient = (expandedBrowseClient===id) ? null : id;
+      opts.rerender();
+    };
     return row;
   }
 
@@ -1155,7 +1705,13 @@ function renderClientGroupList(opts){
 
     const list = document.createElement('div');
     list.className = 'client-list' + (isOpen ? ' open':'');
-    clients.forEach(c=> list.appendChild(buildClientRow(c)));
+    clients.forEach(c=>{
+      list.appendChild(buildClientRow(c));
+      const id = c.idCliente || c.idSistema;
+      if(expandedBrowseClient===id){
+        list.appendChild(buildClientDetailCard(c));
+      }
+    });
     div.appendChild(list);
     wrap.appendChild(div);
   });
@@ -1186,16 +1742,29 @@ function renderPriorityList(){
   wrap.innerHTML = '';
   state.priorityOrder.forEach((key, idx)=>{
     const style = PRIORITY_STYLES[key] || {};
+    const color = state.priorityColors[key];
+    const swatch = color || '#9AA5A8';
     const row = document.createElement('div');
     row.className = 'priority-row';
     row.innerHTML = `
-      <span class="prio-chip" style="background:${style.color || '#9AA5A8'}"></span>
-      <span class="prio-label" style="${style.strike?'text-decoration:line-through;':''}">${PRIORITY_LABELS[key]}</span>
+      <input type="color" class="prio-color-input" value="${swatch}" title="Elegir color">
+      <span class="prio-label" style="${color?'color:'+color+';':''}${style.strike?'text-decoration:line-through;':''}">${PRIORITY_LABELS[key]}</span>
+      <button class="prio-reset" title="Restablecer color por defecto">↺</button>
       <div class="prio-arrows">
         <button data-dir="up" ${idx===0?'disabled':''} title="Subir">↑</button>
         <button data-dir="down" ${idx===state.priorityOrder.length-1?'disabled':''} title="Bajar">↓</button>
       </div>
     `;
+    row.querySelector('.prio-color-input').oninput = (e)=>{
+      state.priorityColors[key] = e.target.value;
+      save();
+      renderPriorityList();
+    };
+    row.querySelector('.prio-reset').onclick = ()=>{
+      state.priorityColors[key] = defaultPriorityColors()[key];
+      save();
+      renderPriorityList();
+    };
     row.querySelector('[data-dir="up"]').onclick = ()=> movePriority(idx, -1);
     row.querySelector('[data-dir="down"]').onclick = ()=> movePriority(idx, 1);
     wrap.appendChild(row);
@@ -1234,90 +1803,235 @@ function renderClientesView(){
 function renderTickets(){
   const hasClients = state.clientes.length > 0;
   document.getElementById('ticketsEmptyState').style.display = hasClients ? 'none':'block';
-  document.getElementById('ticketsSection').style.display = hasClients ? 'block':'none';
-  document.getElementById('weekFilterSection').style.display = hasClients ? 'block':'none';
+  document.getElementById('progLayout').style.display = hasClients ? 'block':'none';
   if(!hasClients) return;
 
-  renderWeekFilterBar();
+  renderWeekFilterControls();
+  renderUnscheduledList();
 
   const grid = document.getElementById('ticketsGrid');
   grid.innerHTML = '';
   const week = currentWeek();
   ensureCurrentDayKey();
 
-  week.days.forEach(day=>{
-    const filled = day.clientSlots.filter(Boolean);
-    const dayHasActiveSlot = state.slotPicker.open && state.slotPicker.dayId===day.id;
-    const isExpanded = state.expandedDays.has(day.id) || dayHasActiveSlot;
+  const GROUP_SIZE = DAYS_PER_SEMANA;
+  let rowEl = null;
+  let daysContainer = null;
+  const daysContainers = [];
 
-    const div = document.createElement('div');
+  week.days.forEach((day, dayIdx)=>{
+    if(dayIdx % GROUP_SIZE === 0){
+      const groupIndex = dayIdx / GROUP_SIZE;
+      rowEl = document.createElement('div');
+      rowEl.className = 'week-row';
 
-    if(!isExpanded){
-      div.className = 'ticket collapsed';
-      div.onclick = ()=>{
-        state.expandedDays.add(day.id);
-        renderTickets();
-      };
-
-      const hasRutas = day.rutas && day.rutas.length>0;
-      const names = filled.map(clientById).filter(Boolean).map(c=>c.nombre||'(sin nombre)');
-
-      div.innerHTML = `
-        <span class="expand-hint">⌄</span>
-        <div class="collapsed-title">${day.title}</div>
-        <div class="collapsed-route">${hasRutas ? day.rutas.join(' / ') : 'Sin ruta configurada'}</div>
-        <div class="collapsed-count">${filled.length} / ${SLOTS_PER_DAY} visitas</div>
-        <div class="collapsed-list">
-          ${names.map(n=>`<div>${n}</div>`).join('') || '<div style="color:var(--muted);">Sin clientes aún</div>'}
-        </div>
+      const titulo = week.semanaTitulos[groupIndex] || '';
+      const titleStrip = document.createElement('div');
+      titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset');
+      titleStrip.innerHTML = `
+        <span class="week-title-strip-inner">
+          <span class="week-title-text">${titulo || '+ Título'}</span>
+          <span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">${reorderModeActive?'☰':'📋'}</span>
+        </span>
       `;
-      grid.appendChild(div);
-      return;
+      titleStrip.querySelector('.week-title-text').onclick = (e)=>{
+        e.stopPropagation();
+        const v = prompt('Título de esta semana:', week.semanaTitulos[groupIndex] || '');
+        if(v!==null){
+          week.semanaTitulos[groupIndex] = v.trim();
+          save();
+          renderTickets();
+        }
+      };
+      rowEl.appendChild(titleStrip);
+
+      daysContainer = document.createElement('div');
+      daysContainer.className = 'week-row-days';
+      daysContainer.dataset.groupIndex = groupIndex;
+      rowEl.appendChild(daysContainer);
+      daysContainers.push(daysContainer);
+
+      grid.appendChild(rowEl);
     }
 
-    div.className = 'ticket ticket-expanded';
+    const filled = day.clientSlots.filter(Boolean);
+    const hasRutas = day.rutas && day.rutas.length>0;
+    const hasSectores = day.sectores && day.sectores.length>0;
+    const hasTitulo = day.titulo && day.titulo.trim().length>0;
+    const titleText = hasTitulo ? day.titulo : (hasRutas ? day.rutas.join(' / ') : '+ Título');
+
+    const posInRow = dayIdx % DAYS_PER_SEMANA;
+    const weekdayName = WEEKDAY_LABELS[posInRow];
+
+    const div = document.createElement('div');
+    div.className = 'ticket';
+
+    const strip = document.createElement('div');
+    strip.className = 'day-strip';
+    strip.innerHTML = `
+      <span class="day-strip-inner">
+        <span class="day-name-text">${weekdayName}</span>
+      </span>
+    `;
+    div.appendChild(strip);
+
+    const body = document.createElement('div');
+    body.className = 'ticket-body';
+    div.appendChild(body);
 
     const head = document.createElement('div');
     head.className = 'ticket-head';
     head.innerHTML = `
-      <div class="day-name">${day.title}</div>
+      <span class="drag-handle day-drag-handle" title="Arrastrar para reordenar día">${reorderModeActive?'☰':'📌'}</span>
+      <div class="route-header">
+        <span class="route-title titulo-text${(hasTitulo||hasRutas)?'':' unset'}">${titleText}</span>
+      </div>
       <div class="day-actions">
-        <button class="collapse" title="Colapsar">⌃</button>
-        <button class="edit" title="Renombrar día">✎</button>
         <button class="trash" title="Eliminar día">🗑</button>
       </div>
     `;
-    head.querySelector('.collapse').onclick = ()=>{
-      state.expandedDays.delete(day.id);
+    head.querySelector('.titulo-text').onclick = (e)=>{
+      e.stopPropagation();
+      const v = prompt('Título de este día (ej. "San Juan 1"):', day.titulo || '');
+      if(v!==null){
+        day.titulo = v.trim();
+        save();
+        renderTickets();
+      }
+    };
+    head.querySelector('.trash').onclick = (e)=>{
+      e.stopPropagation();
+      deleteConfirmDayId = day.id;
       renderTickets();
     };
-    head.querySelector('.edit').onclick = ()=> startEditDayTitle(head, day);
-    head.querySelector('.trash').onclick = ()=>{
-      const msg = filled.length>0
-        ? `Este día tiene ${filled.length} visita(s) asignada(s). ¿Eliminarlo de todas formas?`
-        : '¿Eliminar este día?';
-      if(!confirm(msg)) return;
-      const idx = week.days.indexOf(day);
-      week.days.splice(idx,1);
-      state.expandedDays.delete(day.id);
-      save();
-      renderTickets();
-    };
-    div.appendChild(head);
+    body.appendChild(head);
 
-    const route = document.createElement('div');
-    const hasRutas = day.rutas && day.rutas.length>0;
-    route.className = 'day-route' + (hasRutas ? '' : ' unset');
-    route.textContent = hasRutas ? day.rutas.join(' / ') : '+ Configurar ruta del día';
-    route.onclick = ()=> openRouteConfig(day);
-    div.appendChild(route);
+    if(deleteConfirmDayId===day.id){
+      const panel = document.createElement('div');
+      panel.className = 'inline-picker delete-confirm-panel';
+      const warn = filled.length>0
+        ? `Este día tiene ${filled.length} visita(s) asignada(s).`
+        : 'Este día no tiene visitas asignadas.';
+      panel.innerHTML = `<div class="picker-title">${warn} ¿Qué deseas eliminar?</div>`;
+      const btnDay = document.createElement('button');
+      btnDay.className = 'btn-mini delete-option';
+      btnDay.textContent = 'Eliminar solo este día';
+      btnDay.onclick = ()=> deleteOnlyDay(day);
+      const btnWeek = document.createElement('button');
+      btnWeek.className = 'delete-option delete-option-week';
+      btnWeek.textContent = 'Eliminar la semana completa (5 días)';
+      btnWeek.onclick = ()=>{
+        if(confirm('Esto eliminará los 5 días de esta semana, incluyendo todos los clientes ya asignados en ellos. ¿Continuar?')){
+          deleteWholeSemana(day);
+        }
+      };
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'btn-mini';
+      btnCancel.textContent = 'Cancelar';
+      btnCancel.onclick = closeDeleteConfirm;
+      panel.appendChild(btnDay);
+      panel.appendChild(btnWeek);
+      const actions = document.createElement('div');
+      actions.className = 'picker-actions';
+      actions.appendChild(btnCancel);
+      panel.appendChild(actions);
+      body.appendChild(panel);
+    }
+
+    const filterRow = document.createElement('div');
+    filterRow.className = 'day-filter-row';
+    const rutaBtn = document.createElement('button');
+    rutaBtn.className = 'filter-chip-btn' + (hasRutas ? ' active' : '');
+    rutaBtn.textContent = hasRutas ? `Ruta: ${day.rutas.join(', ')}` : '+ Ruta';
+    rutaBtn.onclick = ()=> openDayFilterConfig(day, 'rutas');
+    const sectorBtn = document.createElement('button');
+    sectorBtn.className = 'filter-chip-btn' + (hasSectores ? ' active' : '');
+    sectorBtn.textContent = hasSectores ? `Sector: ${day.sectores.join(', ')}` : '+ Sector';
+    sectorBtn.onclick = ()=> openDayFilterConfig(day, 'sectores');
+    filterRow.appendChild(rutaBtn);
+    filterRow.appendChild(sectorBtn);
+    body.appendChild(filterRow);
+
+    if(dayFilterConfig.dayId===day.id){
+      const type = dayFilterConfig.type;
+      const label = type==='rutas' ? 'Ruta(s)' : 'Sector(es)';
+      const options = type==='rutas' ? getAllRoutes() : getSectoresForDay(day);
+      const panel = document.createElement('div');
+      panel.className = 'inline-picker';
+
+      if(options.length===0){
+        panel.innerHTML = `<div class="empty-state">No hay ${type==='rutas'?'rutas':'sectores'} en tus clientes importados.</div>`;
+        const actions = document.createElement('div');
+        actions.className = 'picker-actions';
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn-mini';
+        closeBtn.textContent = 'Cerrar';
+        closeBtn.onclick = closeDayFilterConfig;
+        actions.appendChild(closeBtn);
+        panel.appendChild(actions);
+      } else {
+        const title = document.createElement('div');
+        title.className = 'picker-title';
+        title.textContent = `Configurar ${label} del día`;
+        panel.appendChild(title);
+
+        const listWrap = document.createElement('div');
+        listWrap.className = 'client-list-flat';
+        options.forEach(opt=>{
+          const row = document.createElement('div');
+          row.className = 'client-row pickable';
+          row.innerHTML = `
+            <input type="checkbox" ${dayFilterConfig.temp.has(opt)?'checked':''} style="width:18px;height:18px;flex:0 0 auto;">
+            <div class="client-info">
+              <div class="cname"><span class="ruta-chip" style="background:${rutaColor(opt)};display:inline-block;margin-right:6px;"></span>${opt}</div>
+            </div>
+          `;
+          const cb = row.querySelector('input');
+          row.onclick = (e)=>{
+            if(e.target!==cb) cb.checked = !cb.checked;
+            if(cb.checked) dayFilterConfig.temp.add(opt); else dayFilterConfig.temp.delete(opt);
+          };
+          listWrap.appendChild(row);
+        });
+        panel.appendChild(listWrap);
+
+        const actions = document.createElement('div');
+        actions.className = 'picker-actions';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-mini';
+        cancelBtn.textContent = 'Cancelar';
+        cancelBtn.onclick = closeDayFilterConfig;
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Guardar';
+        saveBtn.onclick = ()=>{
+          day[type] = Array.from(dayFilterConfig.temp);
+          if(type==='rutas'){
+            const validSectores = new Set(getSectoresForDay(day));
+            day.sectores = day.sectores.filter(s=> validSectores.has(s));
+          }
+          dayFilterConfig = { type:null, dayId:null, temp:new Set() };
+          save();
+          renderTickets();
+        };
+        actions.appendChild(cancelBtn);
+        actions.appendChild(saveBtn);
+        panel.appendChild(actions);
+      }
+      body.appendChild(panel);
+    }
 
     const count = document.createElement('div');
     count.className = 'day-fill-count';
     count.textContent = `${filled.length} / ${SLOTS_PER_DAY} visitas`;
-    div.appendChild(count);
+    body.appendChild(count);
 
     let pendingInit = null;
+    let visitCounter = 0;
+    const slotList = document.createElement('div');
+    slotList.className = 'slot-list';
+    slotList.dataset.dayId = day.id;
+    slotList.dataset.groupIndex = Math.floor(dayIdx / DAYS_PER_SEMANA);
+    body.appendChild(slotList);
 
     for(let i=0;i<SLOTS_PER_DAY;i++){
       const isActive = state.slotPicker.open && state.slotPicker.dayId===day.id && state.slotPicker.slotIndex===i;
@@ -1326,12 +2040,12 @@ function renderTickets(){
         const inline = document.createElement('div');
         inline.className = 'inline-picker';
         inline.innerHTML = `
+          <div class="picker-actions picker-actions-top"><button class="btn-mini" id="inlinePickerCancel">✕ Cancelar</button></div>
           <div class="search-row"><input type="text" id="inlinePickerSearch" placeholder="Buscar cliente..."></div>
           <div id="inlinePickerNote" style="display:none;"></div>
           <div id="inlinePickerResults" class="client-list-flat"></div>
-          <div class="picker-actions"><button class="btn-mini" id="inlinePickerCancel">Cancelar</button></div>
         `;
-        div.appendChild(inline);
+        body.appendChild(inline);
         pendingInit = ()=>{
           document.getElementById('inlinePickerSearch').addEventListener('input', renderInlinePickerResults);
           document.getElementById('inlinePickerCancel').onclick = ()=>{
@@ -1348,46 +2062,158 @@ function renderTickets(){
       const row = document.createElement('div');
       row.className = 'slot-row';
       if(clientId){
+        visitCounter++;
         const c = clientById(clientId);
         row.innerHTML = `
-          <span class="slot-num">${i+1}.</span>
-          <span class="slot-name" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
+          <span class="drag-handle client-drag-handle" title="Arrastrar para reordenar">${reorderModeActive?'☰':'👤'}</span>
+          <span class="slot-num">${visitCounter}</span>
+          <span class="slot-name slot-name-clickable" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
+          <button class="slot-copy" title="Copiar nombre">📋</button>
           <button class="slot-remove" title="Quitar">×</button>
         `;
-        row.querySelector('.slot-remove').onclick = ()=>{
+        row.querySelector('.slot-name-clickable').onclick = (e)=>{
+          e.stopPropagation();
+          if(expandedDetail && expandedDetail.dayId===day.id && expandedDetail.slotIndex===i){
+            expandedDetail = null;
+          } else {
+            expandedDetail = { dayId: day.id, slotIndex: i };
+          }
+          renderTickets();
+        };
+        row.querySelector('.slot-copy').onclick = (e)=>{
+          e.stopPropagation();
+          copyToClipboard(c ? (c.nombre||'') : '');
+        };
+        row.querySelector('.slot-remove').onclick = (e)=>{
+          e.stopPropagation();
           day.clientSlots[i] = null;
+          if(expandedDetail && expandedDetail.dayId===day.id && expandedDetail.slotIndex===i) expandedDetail = null;
           save();
           renderTickets();
         };
+        slotList.appendChild(row);
+
+        if(c && expandedDetail && expandedDetail.dayId===day.id && expandedDetail.slotIndex===i){
+          slotList.appendChild(buildClientDetailCard(c));
+        }
       } else {
-        row.innerHTML = `
-          <span class="slot-num">${i+1}.</span>
-          <span class="slot-empty"></span>
-        `;
+        row.innerHTML = `<span class="slot-empty"></span>`;
         row.onclick = ()=>{
-          state.slotPicker = { open:true, dayId:day.id, slotIndex:i, routeFilterActive:(day.rutas && day.rutas.length>0) };
+          state.slotPicker = { open:true, dayId:day.id, slotIndex:i, routeFilterActive:((day.rutas&&day.rutas.length>0) || (day.sectores&&day.sectores.length>0)) };
           renderTickets();
         };
+        slotList.appendChild(row);
       }
-      div.appendChild(row);
     }
 
-    grid.appendChild(div);
+    if(reorderModeActive && !(state.slotPicker.open && state.slotPicker.dayId===day.id)){
+      const groupIndexForDay = Math.floor(dayIdx / DAYS_PER_SEMANA);
+      new Sortable(slotList, {
+        handle: '.client-drag-handle',
+        draggable: '.slot-row',
+        animation: 150,
+        group: {
+          name: 'clients-semana-' + groupIndexForDay,
+          pull: true,
+          put: true
+        },
+        onMove: (evt)=>{
+          if(evt.from===evt.to) return true;
+          const destDayId = evt.to.dataset.dayId;
+          const destDay = week.days.find(d=> d.id===destDayId);
+          if(!destDay) return true;
+          const destFilled = destDay.clientSlots.filter(Boolean).length;
+          if(destFilled >= SLOTS_PER_DAY){
+            toast('Ese día ya tiene sus 10 visitas completas.');
+            return false;
+          }
+          return true;
+        },
+        onEnd: (evt)=>{
+          if(evt.item._pcgsHandled){
+            delete evt.item._pcgsHandled;
+            return;
+          }
+          evt.item._pcgsHandled = true;
+          const sourceDayId = evt.from.dataset.dayId;
+          const destDayId = evt.to.dataset.dayId;
+          if(sourceDayId===destDayId){
+            if(evt.oldIndex===evt.newIndex) return;
+            const arr = day.clientSlots;
+            const moved = arr.splice(evt.oldIndex,1)[0];
+            arr.splice(evt.newIndex,0,moved);
+          } else {
+            const sourceDay = week.days.find(d=> d.id===sourceDayId);
+            const destDay = week.days.find(d=> d.id===destDayId);
+            if(!sourceDay || !destDay) return;
+            const moved = sourceDay.clientSlots.splice(evt.oldIndex,1)[0];
+            sourceDay.clientSlots.push(null);
+            destDay.clientSlots.splice(evt.newIndex,0,moved);
+            if(destDay.clientSlots.length>SLOTS_PER_DAY){
+              let nullIdx = -1;
+              for(let k=destDay.clientSlots.length-1;k>=0;k--){
+                if(destDay.clientSlots[k]===null && k!==evt.newIndex){ nullIdx = k; break; }
+              }
+              if(nullIdx!==-1) destDay.clientSlots.splice(nullIdx,1);
+              else destDay.clientSlots.pop();
+            }
+            expandedDetail = null;
+          }
+          save();
+          renderTickets();
+        }
+      });
+    }
+
+    daysContainer.appendChild(div);
     if(pendingInit) pendingInit();
   });
+
+  if(reorderModeActive){
+    new Sortable(grid, {
+      handle: '.week-drag-handle',
+      animation: 150,
+      onEnd: (evt)=>{
+        const groups = getSemanaGroups(week);
+        const moved = groups.splice(evt.oldIndex,1)[0];
+        groups.splice(evt.newIndex,0,moved);
+        setSemanaGroups(week, groups);
+        save();
+        renderTickets();
+      }
+    });
+
+    daysContainers.forEach((container)=>{
+      new Sortable(container, {
+        handle: '.day-drag-handle',
+        animation: 150,
+        onEnd: (evt)=>{
+          const groupIndex = parseInt(container.dataset.groupIndex, 10);
+          const startIdx = groupIndex * DAYS_PER_SEMANA;
+          const slice = week.days.slice(startIdx, startIdx + DAYS_PER_SEMANA);
+          const moved = slice.splice(evt.oldIndex,1)[0];
+          slice.splice(evt.newIndex,0,moved);
+          week.days.splice(startIdx, slice.length, ...slice);
+          save();
+          renderTickets();
+        }
+      });
+    });
+  }
 }
 
-function getEligibleClientsForPicker(query, routeFilter, weekFiltro, excludeIds){
+function getEligibleClientsForPicker(query, routeFilter, sectorFilter, weekFiltro, excludeIds){
   const q = (query||'').toLowerCase().trim();
   const filtered = state.clientes.filter(c=>{
     const id = c.idCliente || c.idSistema;
     if(excludeIds.has(id)) return false;
     if(routeFilter && routeFilter.length>0 && !routeFilter.includes(c.ruta)) return false;
+    if(sectorFilter && sectorFilter.length>0 && !sectorFilter.includes(c.sector)) return false;
     if(weekFiltro){
-      if(weekFiltro.ruta && c.ruta!==weekFiltro.ruta) return false;
-      if(weekFiltro.departamento && c.departamento!==weekFiltro.departamento) return false;
-      if(weekFiltro.municipio && c.sector!==weekFiltro.municipio) return false;
-      if(weekFiltro.prioridad && normalizePriority(c.prioridad)!==weekFiltro.prioridad) return false;
+      if(weekFiltro.rutas.length && !weekFiltro.rutas.includes(c.ruta)) return false;
+      if(weekFiltro.departamentos.length && !weekFiltro.departamentos.includes(c.departamento)) return false;
+      if(weekFiltro.municipios.length && !weekFiltro.municipios.includes(c.sector)) return false;
+      if(weekFiltro.prioridades.length && !weekFiltro.prioridades.includes(normalizePriority(c.prioridad))) return false;
     }
     if(!q) return true;
     return (c.nombre||'').toLowerCase().includes(q) ||
@@ -1395,7 +2221,7 @@ function getEligibleClientsForPicker(query, routeFilter, weekFiltro, excludeIds)
            (c.sector||'').toLowerCase().includes(q) ||
            (c.departamento||'').toLowerCase().includes(q);
   });
-  return sortForWeekFilter(filtered, weekFiltro ? weekFiltro.sort : 'nombre');
+  return sortForWeekFilter(filtered, weekFiltro || defaultWeekFilter());
 }
 
 function renderInlinePickerResults(){
@@ -1404,28 +2230,34 @@ function renderInlinePickerResults(){
   if(!day) return;
   const wf = week.filtro;
   const hasRutas = day.rutas && day.rutas.length>0;
-  const routeFilter = (hasRutas && state.slotPicker.routeFilterActive) ? day.rutas : null;
+  const hasSectores = day.sectores && day.sectores.length>0;
+  const dayFilterActive = state.slotPicker.routeFilterActive;
+  const routeFilter = (hasRutas && dayFilterActive) ? day.rutas : null;
+  const sectorFilter = (hasSectores && dayFilterActive) ? day.sectores : null;
   const excludeIds = assignedClientIdsThisWeek();
   const searchEl = document.getElementById('inlinePickerSearch');
   const query = searchEl ? searchEl.value : '';
-  const clients = getEligibleClientsForPicker(query, routeFilter, wf, excludeIds);
+  const clients = getEligibleClientsForPicker(query, routeFilter, sectorFilter, wf, excludeIds);
 
   const note = document.getElementById('inlinePickerNote');
   const weekFilterParts = [];
-  if(wf.ruta) weekFilterParts.push(`Ruta: ${wf.ruta}`);
-  if(wf.departamento) weekFilterParts.push(`Depto: ${wf.departamento}`);
-  if(wf.municipio) weekFilterParts.push(`Municipio: ${wf.municipio}`);
-  if(wf.prioridad) weekFilterParts.push(`Prioridad: ${PRIORITY_LABELS[wf.prioridad]}`);
+  if(wf.rutas.length) weekFilterParts.push(`Ruta: ${wf.rutas.join(', ')}`);
+  if(wf.departamentos.length) weekFilterParts.push(`Depto: ${wf.departamentos.join(', ')}`);
+  if(wf.municipios.length) weekFilterParts.push(`Municipio: ${wf.municipios.join(', ')}`);
+  if(wf.prioridades.length) weekFilterParts.push(`Prioridad: ${wf.prioridades.map(p=>PRIORITY_LABELS[p]).join(', ')}`);
 
   let noteHtml = '';
   if(weekFilterParts.length>0){
     noteHtml += `Filtro de semana: ${weekFilterParts.join(' · ')}<br>`;
   }
-  if(hasRutas){
-    if(state.slotPicker.routeFilterActive){
-      noteHtml += `Ruta del día: ${day.rutas.join(' / ')} <button id="inlineToggleRoute">Ver sin este filtro</button>`;
+  if(hasRutas || hasSectores){
+    const dayParts = [];
+    if(hasRutas) dayParts.push(`Ruta: ${day.rutas.join(' / ')}`);
+    if(hasSectores) dayParts.push(`Sector: ${day.sectores.join(' / ')}`);
+    if(dayFilterActive){
+      noteHtml += `${dayParts.join(' · ')} <button id="inlineToggleRoute">Ver sin este filtro</button>`;
     } else {
-      noteHtml += `Sin filtro de ruta del día <button id="inlineToggleRoute">Filtrar por ${day.rutas.join(' / ')}</button>`;
+      noteHtml += `Sin filtro del día <button id="inlineToggleRoute">Filtrar por ${dayParts.join(' · ')}</button>`;
     }
   }
   if(noteHtml){
@@ -1443,7 +2275,7 @@ function renderInlinePickerResults(){
   const results = document.getElementById('inlinePickerResults');
   results.innerHTML = '';
   if(clients.length===0){
-    results.innerHTML = `<div class="empty-state">${(routeFilter || weekFilterParts.length>0) ? 'No hay clientes disponibles con estos filtros esta semana.' : 'Todos tus clientes ya están programados esta semana.'}</div>`;
+    results.innerHTML = `<div class="empty-state">${(routeFilter || sectorFilter || weekFilterParts.length>0) ? 'No hay clientes disponibles con estos filtros esta semana.' : 'Todos tus clientes ya están programados esta semana.'}</div>`;
     return;
   }
   clients.forEach(c=>{
@@ -1467,92 +2299,138 @@ function renderInlinePickerResults(){
   });
 }
 
-function startEditDayTitle(headEl, day){
-  const nameDiv = headEl.querySelector('.day-name');
-  const input = document.createElement('input');
-  input.className = 'day-name-input';
-  input.value = day.title;
-  nameDiv.replaceWith(input);
-  input.focus();
-  input.select();
-  const commit = ()=>{
-    const v = input.value.trim();
-    if(v) day.title = v;
-    save();
-    renderTickets();
-    renderCalendarView();
-  };
-  input.onblur = commit;
-  input.onkeydown = (e)=>{ if(e.key==='Enter') input.blur(); };
-}
-
 document.getElementById('addDayBtn').onclick = ()=>{
   const week = currentWeek();
-  const day = { id:newDayId(), title:'Nuevo día', rutas:[], clientSlots: emptySlots() };
-  week.days.push(day);
-  state.expandedDays.add(day.id);
+  const nombresSemana = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  nombresSemana.forEach(nombre=>{
+    week.days.push({ id:newDayId(), title:nombre, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() });
+  });
   save();
   renderTickets();
 };
 
 /* ---------- Configurar ruta(s) del día ---------- */
-let routeConfigDayId = null;
-let routeConfigTemp = new Set();
+let dayFilterConfig = { type:null, dayId:null, temp:new Set() };
 
-function openRouteConfig(day){
+function openDayFilterConfig(day, type){
   closeSlotPicker();
-  routeConfigDayId = day.id;
-  routeConfigTemp = new Set(day.rutas);
-  document.getElementById('routeConfigPanel').style.display = 'block';
-  document.getElementById('routeConfigTitle').textContent = `Rutas para "${day.title}"`;
-  renderRouteConfigList();
-  document.getElementById('routeConfigPanel').scrollIntoView({behavior:'smooth', block:'center'});
+  dayFilterConfig = { type, dayId: day.id, temp: new Set(day[type]) };
+  renderTickets();
 }
 
-function closeRouteConfig(){
-  routeConfigDayId = null;
-  const panel = document.getElementById('routeConfigPanel');
-  if(panel) panel.style.display = 'none';
-}
-
-function renderRouteConfigList(){
-  const routes = getAllRoutes();
-  const wrap = document.getElementById('routeConfigList');
-  wrap.innerHTML = '';
-  if(routes.length===0){
-    wrap.innerHTML = '<div class="empty-state">No hay rutas en tus clientes importados.</div>';
-    return;
-  }
-  routes.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'client-row pickable';
-    row.innerHTML = `
-      <input type="checkbox" ${routeConfigTemp.has(r)?'checked':''} style="width:18px;height:18px;flex:0 0 auto;">
-      <div class="client-info">
-        <div class="cname"><span class="ruta-chip" style="background:${rutaColor(r)};display:inline-block;margin-right:6px;"></span>${r}</div>
-      </div>
-    `;
-    const cb = row.querySelector('input');
-    const toggle = ()=>{
-      cb.checked = !cb.checked;
-      if(cb.checked) routeConfigTemp.add(r); else routeConfigTemp.delete(r);
-    };
-    row.onclick = (e)=>{ if(e.target!==cb){ toggle(); } else { if(cb.checked) routeConfigTemp.add(r); else routeConfigTemp.delete(r); } };
-    wrap.appendChild(row);
-  });
-}
-
-document.getElementById('routeConfigCancel').onclick = closeRouteConfig;
-document.getElementById('routeConfigSave').onclick = ()=>{
-  const week = currentWeek();
-  const day = dayById(week, routeConfigDayId);
-  if(day){
-    day.rutas = Array.from(routeConfigTemp);
-    save();
+function closeDayFilterConfig(){
+  if(dayFilterConfig.dayId!==null){
+    dayFilterConfig = { type:null, dayId:null, temp:new Set() };
     renderTickets();
   }
-  closeRouteConfig();
-};
+}
+
+/* ---------- Tarjeta de detalle de cliente (dentro de un día) ---------- */
+let expandedDetail = null; // { dayId, slotIndex }
+let deleteConfirmDayId = null;
+
+function closeDeleteConfirm(){
+  if(deleteConfirmDayId!==null){
+    deleteConfirmDayId = null;
+    renderTickets();
+  }
+}
+
+function deleteOnlyDay(day){
+  const week = currentWeek();
+  const idx = week.days.indexOf(day);
+  if(idx===-1) return;
+  week.days.splice(idx,1);
+  deleteConfirmDayId = null;
+  save();
+  renderTickets();
+}
+
+function deleteWholeSemana(day){
+  const week = currentWeek();
+  const idx = week.days.indexOf(day);
+  if(idx===-1) return;
+  const groupIndex = Math.floor(idx / DAYS_PER_SEMANA);
+  const startIdx = groupIndex * DAYS_PER_SEMANA;
+  const endIdx = Math.min(startIdx + DAYS_PER_SEMANA, week.days.length);
+  week.days.splice(startIdx, endIdx-startIdx);
+  week.semanaTitulos.splice(groupIndex,1);
+  deleteConfirmDayId = null;
+  save();
+  renderTickets();
+}
+
+let expandedBrowseClient = null; // idCliente|idSistema expandido en la pestaña Clientes
+
+function buildClientDetailCard(c){
+  const card = document.createElement('div');
+  card.className = 'client-detail-card';
+  const fields = [
+    ['ID Cliente', c.idCliente],
+    ['Contacto', c.contacto],
+    ['Teléfono', c.telefono],
+    ['Dirección', c.direccion],
+    ['Departamento', c.departamento],
+    ['Sector', c.sector],
+    ['Ruta', c.ruta],
+    ['Tipo', c.tipo],
+    ['Prioridad', c.prioridad]
+  ].filter(([,v])=> v && String(v).trim().length>0);
+
+  if(fields.length===0){
+    card.innerHTML = '<div class="empty-state">No hay más datos disponibles para este cliente.</div>';
+    return card;
+  }
+  card.innerHTML = fields.map(([label,val])=>
+    `<div class="detail-row"><span class="detail-label">${label}:</span> ${val}</div>`
+  ).join('');
+  return card;
+}
+
+/* ---------- Copiar al portapapeles ---------- */
+function copyToClipboard(text){
+  if(!text){ return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(
+      ()=> toast('Nombre copiado'),
+      ()=> fallbackCopy(text)
+    );
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try{
+    document.execCommand('copy');
+    toast('Nombre copiado');
+  }catch(e){
+    toast('No se pudo copiar');
+  }
+  document.body.removeChild(ta);
+}
+
+document.addEventListener('click', (e)=>{
+  if(expandedDetail && !e.target.closest('.client-detail-card') && !e.target.closest('.slot-row')){
+    expandedDetail = null;
+    renderTickets();
+  }
+  if(expandedBrowseClient && !e.target.closest('.client-detail-card') && !e.target.closest('.client-row-clickable')){
+    expandedBrowseClient = null;
+    renderClientesView();
+  }
+  if(deleteConfirmDayId!==null && !e.target.closest('.delete-confirm-panel') && !e.target.closest('.trash')){
+    deleteConfirmDayId = null;
+    renderTickets();
+  }
+});
 
 /* ---------- Cerrar picker inline al salir/cambiar de contexto ---------- */
 function closeSlotPicker(){
