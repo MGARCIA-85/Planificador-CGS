@@ -999,7 +999,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v24';
+const APP_VERSION = 'v25';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -2462,8 +2462,11 @@ function openRenameDialog(title, currentValue, onSave){
     else if(e.key==='Escape'){ close(); }
   };
 
-  input.focus();
-  input.select();
+  requestAnimationFrame(()=>{
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  });
 }
 
 function copyToClipboard(text){
