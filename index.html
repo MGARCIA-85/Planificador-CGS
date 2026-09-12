@@ -275,51 +275,6 @@
   }
   #filterMultiPanel #filterMultiList{max-height:240px;overflow-y:auto;}
   #filterMultiPanel .picker-actions{justify-content:space-between;}
-  .rename-dialog-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:100;
-    padding:20px;
-  }
-  .rename-dialog{
-    background:var(--surface);
-    border-radius:12px;
-    padding:16px;
-    width:100%;
-    max-width:320px;
-  }
-  .rename-dialog-title{
-    font-size:13.5px;
-    font-weight:700;
-    margin-bottom:10px;
-    color:var(--ink);
-  }
-  .rename-dialog-input{
-    width:100%;
-    padding:10px 12px;
-    border-radius:8px;
-    border:1px solid var(--line);
-    font-size:14px;
-    margin-bottom:12px;
-  }
-  .rename-dialog-actions{
-    display:flex;
-    justify-content:flex-end;
-    gap:8px;
-  }
-  .rename-dialog-actions .rename-save{
-    background:var(--accent);
-    color:#fff;
-    border:none;
-    padding:9px 16px;
-    border-radius:8px;
-    font-size:13.5px;
-    font-weight:600;
-  }
   .prog-lower{
     display:flex;
     align-items:flex-start;
@@ -999,7 +954,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v30';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1393,13 +1348,12 @@ function renderWeekStrip(){
 }
 
 function startEditWeekName(pill, week){
-  openRenameDialog('Nombre del mes', week.label, (v)=>{
-    if(v){
-      week.label = v;
-      save();
-      renderWeekStrip();
-    }
-  });
+  const v = prompt('Nombre del mes:', week.label);
+  if(v && v.trim()){
+    week.label = v.trim();
+    save();
+    renderWeekStrip();
+  }
 }
 
 /* ---------- clientes: helpers compartidos ---------- */
@@ -1882,11 +1836,12 @@ function renderTickets(){
       `;
       titleStrip.querySelector('.week-title-text').onclick = (e)=>{
         e.stopPropagation();
-        openRenameDialog('Título de esta semana', week.semanaTitulos[groupIndex] || '', (v)=>{
-          week.semanaTitulos[groupIndex] = v;
+        const v = prompt('Título de esta semana:', week.semanaTitulos[groupIndex] || '');
+        if(v!==null){
+          week.semanaTitulos[groupIndex] = v.trim();
           save();
           renderTickets();
-        });
+        }
       };
       rowEl.appendChild(titleStrip);
 
@@ -1937,11 +1892,12 @@ function renderTickets(){
     `;
     head.querySelector('.titulo-text').onclick = (e)=>{
       e.stopPropagation();
-      openRenameDialog('Título de este día (ej. "San Juan 1")', day.titulo || '', (v)=>{
-        day.titulo = v;
+      const v = prompt('Título de este día (ej. "San Juan 1"):', day.titulo || '');
+      if(v!==null){
+        day.titulo = v.trim();
         save();
         renderTickets();
-      });
+      }
     };
     head.querySelector('.trash').onclick = (e)=>{
       e.stopPropagation();
@@ -2431,44 +2387,6 @@ function buildClientDetailCard(c){
 }
 
 /* ---------- Copiar al portapapeles ---------- */
-function openRenameDialog(title, currentValue, onSave){
-  const overlay = document.createElement('div');
-  overlay.className = 'rename-dialog-overlay';
-  overlay.innerHTML = `
-    <div class="rename-dialog">
-      <div class="rename-dialog-title">${title}</div>
-      <input type="text" class="rename-dialog-input">
-      <div class="rename-dialog-actions">
-        <button class="btn-mini rename-cancel">Cancelar</button>
-        <button class="rename-save">Guardar</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  const input = overlay.querySelector('.rename-dialog-input');
-  input.value = currentValue || '';
-
-  const close = ()=> overlay.remove();
-  const doSave = ()=>{
-    const v = input.value.trim();
-    close();
-    onSave(v);
-  };
-  overlay.querySelector('.rename-save').onclick = doSave;
-  overlay.querySelector('.rename-cancel').onclick = close;
-  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
-  input.onkeydown = (e)=>{
-    if(e.key==='Enter'){ e.preventDefault(); doSave(); }
-    else if(e.key==='Escape'){ close(); }
-  };
-
-  requestAnimationFrame(()=>{
-    input.focus();
-    const len = input.value.length;
-    input.setSelectionRange(len, len);
-  });
-}
-
 function copyToClipboard(text){
   if(!text){ return; }
   if(navigator.clipboard && navigator.clipboard.writeText){
