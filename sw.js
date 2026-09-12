@@ -1,6 +1,6 @@
 // Planificador CGS - Service Worker
 // Sube este número cada vez que publiques cambios para forzar actualización
-const CACHE_VERSION = 'v46';
+const CACHE_VERSION = 'v47';
 const CACHE_NAME = 'planificador-cgs-' + CACHE_VERSION;
 
 const ASSETS = [
