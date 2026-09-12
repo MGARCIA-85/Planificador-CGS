@@ -1165,7 +1165,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v47';
+const APP_VERSION = 'v48';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1444,6 +1444,30 @@ function duplicateWeek(week, newCalendarMonth, newLabel){
   return clone;
 }
 
+function duplicateWeekFlow(w, weeks, insertIndex){
+  if(confirm(`¿Quieres asignarle un mes/año real a la copia de "${w.label}"?\n\nAceptar = elegir mes y año real\nCancelar = crear como "mes maestro" (plantilla, sin fecha)`)){
+    openMonthYearPicker(`Duplicar "${w.label}" — ¿a qué mes y año lo asignas?`, ({month, year})=>{
+      const clone = duplicateWeek(w, {month, year}, formatCalendarMonth({month,year}));
+      weeks.splice(insertIndex, 0, clone);
+      state.currentWeekIndex = insertIndex;
+      save();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    });
+  } else {
+    const nombre = prompt('Nombre de esta copia (mes maestro/plantilla):', 'Copia de ' + w.label);
+    if(nombre===null) return;
+    const clone = duplicateWeek(w, null, nombre.trim() || ('Copia de ' + w.label));
+    weeks.splice(insertIndex, 0, clone);
+    state.currentWeekIndex = insertIndex;
+    save();
+    renderWeekStrip();
+    renderTickets();
+    renderCalendarView();
+  }
+}
+
 function getDayRealDate(week, dayIdx){
   if(!week.calendarMonth) return null;
   const groupIndex = Math.floor(dayIdx / DAYS_PER_SEMANA);
@@ -1586,15 +1610,7 @@ function renderWeekStrip(){
     dup.textContent = '⧉';
     dup.onclick = (e)=>{
       e.stopPropagation();
-      openMonthYearPicker(`Duplicar "${w.label}" — ¿a qué mes y año lo asignas?`, ({month, year})=>{
-        const clone = duplicateWeek(w, {month, year}, formatCalendarMonth({month,year}));
-        weeks.splice(i+1, 0, clone);
-        state.currentWeekIndex = i+1;
-        save();
-        renderWeekStrip();
-        renderTickets();
-        renderCalendarView();
-      });
+      duplicateWeekFlow(w, weeks, i+1);
     };
     pill.appendChild(dup);
 
@@ -1650,15 +1666,7 @@ function renderWeekStrip(){
     dup2.textContent = '⧉';
     dup2.onclick = (e)=>{
       e.stopPropagation();
-      openMonthYearPicker(`Duplicar "${activeWeekObj.label}" — ¿a qué mes y año lo asignas?`, ({month, year})=>{
-        const clone = duplicateWeek(activeWeekObj, {month, year}, formatCalendarMonth({month,year}));
-        weeks.splice(idx+1, 0, clone);
-        state.currentWeekIndex = idx+1;
-        save();
-        renderWeekStrip();
-        renderTickets();
-        renderCalendarView();
-      });
+      duplicateWeekFlow(activeWeekObj, weeks, idx+1);
     };
     realBtn.appendChild(dup2);
 
@@ -2654,14 +2662,32 @@ function renderTickets(){
     daysContainers.forEach((container)=>{
       new Sortable(container, {
         handle: '.day-drag-handle',
+        group: { name: 'days-cross-semana', pull:true, put:true },
         animation: 150,
         onEnd: (evt)=>{
-          const groupIndex = parseInt(container.dataset.groupIndex, 10);
-          const startIdx = groupIndex * DAYS_PER_SEMANA;
-          const slice = week.days.slice(startIdx, startIdx + DAYS_PER_SEMANA);
-          const moved = slice.splice(evt.oldIndex,1)[0];
-          slice.splice(evt.newIndex,0,moved);
-          week.days.splice(startIdx, slice.length, ...slice);
+          if(evt.item._pcgsHandled){
+            delete evt.item._pcgsHandled;
+            return;
+          }
+          evt.item._pcgsHandled = true;
+          const sourceGroupIndex = parseInt(evt.from.dataset.groupIndex, 10);
+          const destGroupIndex = parseInt(evt.to.dataset.groupIndex, 10);
+          if(sourceGroupIndex===destGroupIndex){
+            if(evt.oldIndex===evt.newIndex) return;
+            const startIdx = sourceGroupIndex * DAYS_PER_SEMANA;
+            const slice = week.days.slice(startIdx, startIdx + DAYS_PER_SEMANA);
+            const moved = slice.splice(evt.oldIndex,1)[0];
+            slice.splice(evt.newIndex,0,moved);
+            week.days.splice(startIdx, slice.length, ...slice);
+          } else {
+            // Entre semanas distintas: se intercambian los dos días de posición,
+            // así ambas filas se mantienen siempre en 5 días.
+            const sourceFlatIdx = sourceGroupIndex * DAYS_PER_SEMANA + evt.oldIndex;
+            const destFlatIdx = destGroupIndex * DAYS_PER_SEMANA + evt.newIndex;
+            const tmp = week.days[sourceFlatIdx];
+            week.days[sourceFlatIdx] = week.days[destFlatIdx];
+            week.days[destFlatIdx] = tmp;
+          }
           save();
           renderTickets();
         }
