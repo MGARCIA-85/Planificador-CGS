@@ -112,6 +112,13 @@
     opacity:0.9;
   }
   .drag-handle:active{cursor:grabbing;}
+  .client-drag-handle.copied{
+    background:#22C55E;
+    border-radius:50%;
+    padding:2px 4px;
+    display:inline-block;
+    line-height:1;
+  }
   .week-pill{
     flex:0 0 auto;
     padding:7px 14px;
@@ -954,7 +961,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v30';
+const APP_VERSION = 'v33';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1014,7 +1021,8 @@ let state = {
   groupMode: 'ruta',
   slotPicker: { open:false, dayId:null, slotIndex:null, openGroups:new Set() },
   priorityOrder: null,
-  priorityColors: null
+  priorityColors: null,
+  copiedClients: new Set()
 };
 
 function todayMonthKey(){
@@ -1051,6 +1059,7 @@ function priorityStyle(p){
 }
 
 const LS_PRIORITY_COLORS = 'pcgs_priority_colors';
+const LS_COPIED_CLIENTS = 'pcgs_copied_clients';
 
 function defaultPriorityColors(){
   const colors = {};
@@ -1063,6 +1072,7 @@ function save(){
   localStorage.setItem(LS_MESES, JSON.stringify(state.meses));
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
   localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
+  localStorage.setItem(LS_COPIED_CLIENTS, JSON.stringify(Array.from(state.copiedClients)));
 }
 
 function load(){
@@ -1079,6 +1089,10 @@ function load(){
     const defaults = defaultPriorityColors();
     state.priorityColors = (storedColors && typeof storedColors==='object') ? Object.assign(defaults, storedColors) : defaults;
   }catch(e){ state.priorityColors = defaultPriorityColors(); }
+  try{
+    const storedCopied = JSON.parse(localStorage.getItem(LS_COPIED_CLIENTS));
+    state.copiedClients = new Set(Array.isArray(storedCopied) ? storedCopied : []);
+  }catch(e){ state.copiedClients = new Set(); }
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
@@ -1810,6 +1824,10 @@ function renderTickets(){
   renderUnscheduledList();
 
   const grid = document.getElementById('ticketsGrid');
+  const savedScrollByGroup = {};
+  grid.querySelectorAll('.week-row').forEach(el=>{
+    savedScrollByGroup[el.dataset.groupIndex] = el.scrollLeft;
+  });
   grid.innerHTML = '';
   const week = currentWeek();
   ensureCurrentDayKey();
@@ -1818,12 +1836,14 @@ function renderTickets(){
   let rowEl = null;
   let daysContainer = null;
   const daysContainers = [];
+  const rowEls = [];
 
   week.days.forEach((day, dayIdx)=>{
     if(dayIdx % GROUP_SIZE === 0){
       const groupIndex = dayIdx / GROUP_SIZE;
       rowEl = document.createElement('div');
       rowEl.className = 'week-row';
+      rowEl.dataset.groupIndex = groupIndex;
 
       const titulo = week.semanaTitulos[groupIndex] || '';
       const titleStrip = document.createElement('div');
@@ -1850,6 +1870,7 @@ function renderTickets(){
       daysContainer.dataset.groupIndex = groupIndex;
       rowEl.appendChild(daysContainer);
       daysContainers.push(daysContainer);
+      rowEls.push(rowEl);
 
       grid.appendChild(rowEl);
     }
@@ -2063,13 +2084,23 @@ function renderTickets(){
       if(clientId){
         visitCounter++;
         const c = clientById(clientId);
+        const isCopied = state.copiedClients.has(clientId);
         row.innerHTML = `
-          <span class="drag-handle client-drag-handle" title="Arrastrar para reordenar">${reorderModeActive?'☰':'👤'}</span>
+          <span class="drag-handle client-drag-handle${isCopied&&!reorderModeActive?' copied':''}" title="${reorderModeActive?'Arrastrar para reordenar':'Marcar/quitar copiado'}">${reorderModeActive?'☰':'👤'}</span>
           <span class="slot-num">${visitCounter}</span>
           <span class="slot-name slot-name-clickable" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
           <button class="slot-copy" title="Copiar nombre">📋</button>
           <button class="slot-remove" title="Quitar">×</button>
         `;
+        if(!reorderModeActive){
+          row.querySelector('.client-drag-handle').onclick = (e)=>{
+            e.stopPropagation();
+            if(state.copiedClients.has(clientId)) state.copiedClients.delete(clientId);
+            else state.copiedClients.add(clientId);
+            save();
+            renderTickets();
+          };
+        }
         row.querySelector('.slot-name-clickable').onclick = (e)=>{
           e.stopPropagation();
           if(expandedDetail && expandedDetail.dayId===day.id && expandedDetail.slotIndex===i){
@@ -2082,6 +2113,9 @@ function renderTickets(){
         row.querySelector('.slot-copy').onclick = (e)=>{
           e.stopPropagation();
           copyToClipboard(c ? (c.nombre||'') : '');
+          state.copiedClients.add(clientId);
+          save();
+          renderTickets();
         };
         row.querySelector('.slot-remove').onclick = (e)=>{
           e.stopPropagation();
@@ -2166,6 +2200,11 @@ function renderTickets(){
 
     daysContainer.appendChild(div);
     if(pendingInit) pendingInit();
+  });
+
+  rowEls.forEach((rowEl)=>{
+    const saved = savedScrollByGroup[rowEl.dataset.groupIndex];
+    if(saved!==undefined) rowEl.scrollLeft = saved;
   });
 
   if(reorderModeActive){
