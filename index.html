@@ -1165,7 +1165,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v48';
+const APP_VERSION = 'v52';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -2893,12 +2893,43 @@ function exportBackup(){
     priorityColors: state.priorityColors,
     copiedClients: Array.from(state.copiedClients)
   };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const dateStr = new Date().toISOString().slice(0,10);
+  const filename = `planificador-cgs-respaldo-${dateStr}.json`;
+  const content = JSON.stringify(backup, null, 2);
+
+  const jsonBlob = new Blob([content], {type:'application/json'});
+  const jsonFile = new File([jsonBlob], filename, {type:'application/json'});
+  const textFile = new File([content], filename, {type:'text/plain'});
+
+  const tryShare = (file)=> navigator.share({
+    files: [file],
+    title: 'Respaldo Planificador CGS',
+    text: 'Respaldo de Planificador CGS — ' + dateStr
+  });
+
+  const canShareJson = navigator.canShare && navigator.canShare({files:[jsonFile]});
+  const canShareText = navigator.canShare && navigator.canShare({files:[textFile]});
+
+  if(canShareJson || canShareText || navigator.share){
+    const fileToTry = canShareJson ? jsonFile : textFile;
+    try{
+      tryShare(fileToTry).catch((err)=>{
+        if(err && err.name==='AbortError') return;
+        downloadBackupFile(jsonBlob, filename);
+      });
+    }catch(err){
+      downloadBackupFile(jsonBlob, filename);
+    }
+  } else {
+    downloadBackupFile(jsonBlob, filename);
+  }
+}
+
+function downloadBackupFile(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const dateStr = new Date().toISOString().slice(0,10);
-  a.download = `planificador-cgs-respaldo-${dateStr}.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2906,41 +2937,46 @@ function exportBackup(){
   toast('Respaldo descargado');
 }
 
+function restoreFromBackupJSON(jsonText){
+  let data;
+  try{
+    data = JSON.parse(jsonText);
+  }catch(err){
+    toast('No se pudo leer el texto/archivo. Verifica que sea un respaldo válido.');
+    console.error(err);
+    return false;
+  }
+  if(!data || !Array.isArray(data.clientes) || typeof data.meses !== 'object'){
+    toast('Esto no parece ser un respaldo válido de Planificador CGS.');
+    return false;
+  }
+  state.clientes = data.clientes || [];
+  state.meses = data.meses || {};
+  const validSet = new Set(PRIORITY_RANK);
+  state.priorityOrder = (Array.isArray(data.priorityOrder) && data.priorityOrder.length===PRIORITY_RANK.length && data.priorityOrder.every(k=>validSet.has(k)))
+    ? data.priorityOrder : PRIORITY_RANK.slice();
+  state.priorityColors = (data.priorityColors && typeof data.priorityColors==='object')
+    ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
+  state.copiedClients = new Set(Array.isArray(data.copiedClients) ? data.copiedClients : []);
+  migrateOldData();
+  state.currentMonthKey = todayMonthKey();
+  ensureMonth(state.currentMonthKey);
+  state.currentWeekIndex = 0;
+  save();
+  renderHeader();
+  renderWeekStrip();
+  renderClientesView();
+  renderTickets();
+  renderListasView();
+  toast('Respaldo restaurado correctamente');
+  return true;
+}
+
 function importBackup(file){
   if(!file) return;
   if(!confirm('Esto reemplazará TODOS los datos actuales de esta app (clientes, meses, semanas y visitas asignadas) con los del archivo de respaldo. Esta acción no se puede deshacer. ¿Continuar?')) return;
   const reader = new FileReader();
-  reader.onload = (e)=>{
-    try{
-      const data = JSON.parse(e.target.result);
-      if(!data || !Array.isArray(data.clientes) || typeof data.meses !== 'object'){
-        toast('El archivo no parece ser un respaldo válido de Planificador CGS.');
-        return;
-      }
-      state.clientes = data.clientes || [];
-      state.meses = data.meses || {};
-      const validSet = new Set(PRIORITY_RANK);
-      state.priorityOrder = (Array.isArray(data.priorityOrder) && data.priorityOrder.length===PRIORITY_RANK.length && data.priorityOrder.every(k=>validSet.has(k)))
-        ? data.priorityOrder : PRIORITY_RANK.slice();
-      state.priorityColors = (data.priorityColors && typeof data.priorityColors==='object')
-        ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
-      state.copiedClients = new Set(Array.isArray(data.copiedClients) ? data.copiedClients : []);
-      migrateOldData();
-      state.currentMonthKey = todayMonthKey();
-      ensureMonth(state.currentMonthKey);
-      state.currentWeekIndex = 0;
-      save();
-      renderHeader();
-      renderWeekStrip();
-      renderClientesView();
-      renderTickets();
-      renderListasView();
-      toast('Respaldo importado correctamente');
-    }catch(err){
-      toast('No se pudo leer el archivo. Verifica que sea un respaldo válido.');
-      console.error(err);
-    }
-  };
+  reader.onload = (e)=> restoreFromBackupJSON(e.target.result);
   reader.readAsText(file);
 }
 
