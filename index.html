@@ -175,12 +175,6 @@
   }
   .week-pill.add{color:var(--accent);border-style:dashed;}
   .week-pill .edit-pencil{margin-left:20px;opacity:0.85;}
-  .week-pill .pick-other-month{
-    margin-left:20px;
-    opacity:0.9;
-    font-weight:700;
-    font-size:20px;
-  }
   .week-pill .move-week{
     margin-left:20px;
     opacity:0.9;
@@ -913,6 +907,13 @@
     color:var(--ink);
     cursor:pointer;
   }
+  @media (orientation: portrait){
+    .calendar-day{
+      aspect-ratio:auto;
+      height:46px;
+    }
+    .calendar-grid{ gap:4px; margin-bottom:10px; }
+  }
   @media (orientation: landscape){
     .calendar-day{
       aspect-ratio:auto;
@@ -973,9 +974,9 @@
     padding:12px;
     margin-bottom:8px;
     display:flex;
-    justify-content:space-between;
     align-items:flex-start;
     gap:10px;
+    cursor:pointer;
   }
   .visit-card .vnum{
     font-size:11px;color:var(--muted);font-weight:700;margin-right:6px;
@@ -1328,7 +1329,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v76';
+const APP_VERSION = 'v80';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1765,6 +1766,9 @@ function renderWeekStrip(){
   strip.appendChild(pillsList);
 
   const weeks = currentMonth().weeks;
+  if(state.currentWeekIndex < 0 || state.currentWeekIndex >= weeks.length){
+    state.currentWeekIndex = 0;
+  }
   const activeWeekObj = weeks[state.currentWeekIndex];
 
   weeks.forEach((w, i)=>{
@@ -1826,6 +1830,7 @@ function renderWeekStrip(){
     pill.onclick = ()=>{
       state.currentWeekIndex = i;
       closeSlotPicker();
+      renderWeekStrip();
       renderTickets();
       renderCalendarView();
     };
@@ -1836,19 +1841,28 @@ function renderWeekStrip(){
   const now = new Date();
   const todayCM = { month: now.getMonth()+1, year: now.getFullYear() };
   const activeIsReal = activeWeekObj && activeWeekObj.calendarMonth;
-  const realBtn = document.createElement('button');
-  realBtn.className = 'week-pill real-month-btn' + (activeIsReal ? ' active':'');
-  const displayCM = activeIsReal ? activeWeekObj.calendarMonth : todayCM;
-  realBtn.innerHTML = `<span class="real-month-label">📅 ${formatCalendarMonth(displayCM).toUpperCase()}</span>`;
+  const todayIsActive = activeIsReal && activeWeekObj.calendarMonth.month===todayCM.month && activeWeekObj.calendarMonth.year===todayCM.year;
+  const otherRealActive = activeIsReal && !todayIsActive;
 
-  if(activeIsReal){
+  const realBtn = document.createElement('button');
+  realBtn.className = 'week-pill real-month-btn' + (todayIsActive ? ' active':'');
+  realBtn.innerHTML = `<span class="real-month-label">📅 ${formatCalendarMonth(todayCM).toUpperCase()}</span>`;
+
+  const searchMonthBtn = document.createElement('button');
+  searchMonthBtn.className = 'week-pill search-month-btn' + (otherRealActive ? ' active':'');
+  searchMonthBtn.innerHTML = otherRealActive
+    ? `<span class="real-month-label">🔍 ${formatCalendarMonth(activeWeekObj.calendarMonth).toUpperCase()}</span>`
+    : '🔍 Buscar mes';
+
+  const activeRealBtn = todayIsActive ? realBtn : (otherRealActive ? searchMonthBtn : null);
+  if(activeRealBtn){
     const idx = weeks.indexOf(activeWeekObj);
     const pencil2 = document.createElement('span');
     pencil2.className = 'edit-pencil';
     pencil2.title = 'Renombrar';
     pencil2.textContent = '✎';
-    pencil2.onclick = (e)=>{ e.stopPropagation(); startEditWeekName(realBtn, activeWeekObj); };
-    realBtn.appendChild(pencil2);
+    pencil2.onclick = (e)=>{ e.stopPropagation(); startEditWeekName(activeRealBtn, activeWeekObj); };
+    activeRealBtn.appendChild(pencil2);
 
     const dup2 = document.createElement('span');
     dup2.className = 'move-week duplicate-week';
@@ -1858,7 +1872,7 @@ function renderWeekStrip(){
       e.stopPropagation();
       duplicateWeekFlow(activeWeekObj, weeks, idx+1);
     };
-    realBtn.appendChild(dup2);
+    activeRealBtn.appendChild(dup2);
 
     const del2 = document.createElement('span');
     del2.className = 'move-week delete-week';
@@ -1875,32 +1889,11 @@ function renderWeekStrip(){
       renderTickets();
       renderCalendarView();
     };
-    realBtn.appendChild(del2);
+    activeRealBtn.appendChild(del2);
   }
 
-  const pickOther = document.createElement('span');
-  pickOther.className = 'pick-other-month';
-  pickOther.title = 'Ver otro mes';
-  pickOther.textContent = '▾';
-  pickOther.onclick = (e)=>{
-    e.stopPropagation();
-    openMonthYearPicker('¿Qué mes quieres ver?', ({month, year})=>{
-      const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===month && w.calendarMonth.year===year);
-      if(found){
-        state.currentWeekIndex = weeks.indexOf(found);
-        closeSlotPicker();
-        renderWeekStrip();
-        renderTickets();
-        renderCalendarView();
-      } else {
-        toast(`Aún no has creado ${formatCalendarMonth({month,year})}. Usa "+ Mes" para crearlo.`);
-      }
-    });
-  };
-  realBtn.appendChild(pickOther);
-
   realBtn.onclick = (e)=>{
-    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week, .pick-other-month')) return;
+    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
     const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===todayCM.month && w.calendarMonth.year===todayCM.year);
     if(found){
       state.currentWeekIndex = weeks.indexOf(found);
@@ -1914,10 +1907,27 @@ function renderWeekStrip(){
   };
   pillsList.appendChild(realBtn);
 
+  searchMonthBtn.onclick = (e)=>{
+    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
+    openMonthYearPicker('¿Qué mes quieres ver?', ({month, year})=>{
+      const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===month && w.calendarMonth.year===year);
+      if(found){
+        state.currentWeekIndex = weeks.indexOf(found);
+        closeSlotPicker();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      } else {
+        toast(`Aún no has creado ${formatCalendarMonth({month,year})}. Usa "+ Mes" para crearlo.`);
+      }
+    });
+  };
+  pillsList.appendChild(searchMonthBtn);
+
   if(reorderModeActive){
     new Sortable(pillsList, {
       handle: '.month-drag-handle',
-      draggable: '.week-pill:not(.real-month-btn)',
+      draggable: '.week-pill:not(.real-month-btn):not(.search-month-btn)',
       animation: 150,
       onEnd: (evt)=>{
         const weeks2 = currentMonth().weeks;
@@ -2554,12 +2564,14 @@ function renderTickets(){
 
     const posInRowEmpty = dayIdx % DAYS_PER_SEMANA;
     const weekdayNameEmpty = WEEKDAY_LABELS[posInRowEmpty];
+    const realDateEmpty = getDayRealDate(week, dayIdx);
+    const dateLabelEmpty = realDateEmpty ? ` · ${formatShortDate(realDateEmpty)}` : '';
     if(!day){
       const emptyDiv = document.createElement('div');
       emptyDiv.className = 'ticket ticket-empty';
       emptyDiv.innerHTML = `
         <div class="day-strip">
-          <span class="day-strip-inner"><span class="day-name-text">${weekdayNameEmpty}</span></span>
+          <span class="day-strip-inner"><span class="day-name-text">${weekdayNameEmpty}${dateLabelEmpty}</span></span>
         </div>
         <div class="ticket-body ticket-empty-body">
           <button class="add-empty-day-btn" title="Agregar día aquí">+</button>
@@ -2590,9 +2602,11 @@ function renderTickets(){
 
     const strip = document.createElement('div');
     strip.className = 'day-strip';
+    const realDateFilled = getDayRealDate(week, dayIdx);
+    const dateLabelFilled = realDateFilled ? ` · ${formatShortDate(realDateFilled)}` : '';
     strip.innerHTML = `
       <span class="day-strip-inner">
-        <span class="day-name-text">${weekdayName}</span>
+        <span class="day-name-text">${weekdayName}${dateLabelFilled}</span>
       </span>
     `;
     const dayGroupIndex = Math.floor(dayIdx / DAYS_PER_SEMANA);
@@ -3601,6 +3615,7 @@ function closeSlotPicker(){
 let calViewMonth = null;
 let calViewYear = null;
 let calSelectedDate = null;
+let calExpandedClient = null;
 
 function renderCalendarView(){
   if(calViewMonth===null){
@@ -3639,6 +3654,7 @@ function renderCalendarView(){
     cell.innerHTML = `${d}` + (visits.length ? `<span class="cal-day-dot">${visits.length}</span>` : '');
     cell.onclick = ()=>{
       calSelectedDate = iso;
+      calExpandedClient = null;
       renderCalendarView();
     };
     grid.appendChild(cell);
@@ -3649,6 +3665,7 @@ function renderCalendarView(){
 
 function renderCalendarDayDetail(visitsByDate){
   const wrap = document.getElementById('calendarDayDetail');
+  wrap.innerHTML = '';
   if(!calSelectedDate){
     wrap.innerHTML = `<div class="empty-state">Toca un día para ver los clientes programados ese día.</div>`;
     return;
@@ -3658,26 +3675,41 @@ function renderCalendarDayDetail(visitsByDate){
   const dObj = new Date(yy, mm-1, dd);
   const titleTxt = formatShortDate(dObj) + ' de ' + yy;
 
+  const titleEl = document.createElement('div');
+  titleEl.className = 'section-title';
+  titleEl.innerHTML = `<span>${titleTxt}${visits.length ? ' — '+visits.length+' visita(s)' : ''}</span>`;
+  wrap.appendChild(titleEl);
+
   if(visits.length===0){
-    wrap.innerHTML = `<div class="section-title"><span>${titleTxt}</span></div><div class="empty-state">Sin clientes programados este día.</div>`;
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'Sin clientes programados este día.';
+    wrap.appendChild(empty);
     return;
   }
 
-  const cards = visits.map(v=>{
+  visits.forEach(v=>{
     const c = clientById(v.clientId);
-    if(!c) return '';
+    if(!c) return;
     const markClass = v.mark==='gray' ? ' mark-gray' : (v.mark==='cyan' ? ' mark-cyan' : '');
-    return `<div class="visit-card">
+    const card = document.createElement('div');
+    card.className = 'visit-card';
+    card.innerHTML = `
       <span class="client-drag-handle${markClass}" style="margin-right:8px;">👤</span>
       <div>
         <div class="vname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
         <div class="vmeta">${[c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
-        <span class="vroute" style="background:${rutaColor(c.ruta)}22;color:${rutaColor(c.ruta)}">${c.ruta||'Sin ruta'}</span>
       </div>
-    </div>`;
-  }).join('');
-
-  wrap.innerHTML = `<div class="section-title"><span>${titleTxt} — ${visits.length} visita(s)</span></div>${cards}`;
+    `;
+    card.onclick = ()=>{
+      calExpandedClient = (calExpandedClient===v.clientId) ? null : v.clientId;
+      renderCalendarDayDetail(visitsByDate);
+    };
+    wrap.appendChild(card);
+    if(calExpandedClient===v.clientId){
+      wrap.appendChild(buildClientDetailCard(c));
+    }
+  });
 }
 
 document.getElementById('calPrevMonth').onclick = ()=>{
