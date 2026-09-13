@@ -1289,7 +1289,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v71';
+const APP_VERSION = 'v72';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3104,7 +3104,10 @@ function deleteWholeSemana(day){
   const groupIndex = Math.floor(idx / DAYS_PER_SEMANA);
   const startIdx = groupIndex * DAYS_PER_SEMANA;
   const endIdx = Math.min(startIdx + DAYS_PER_SEMANA, week.days.length);
-  for(let i=startIdx;i<endIdx;i++) week.days[i] = null;
+  week.days.splice(startIdx, endIdx-startIdx);
+  if(week.semanaTitulos) week.semanaTitulos.splice(groupIndex,1);
+  if(week.semanaFechas) week.semanaFechas.splice(groupIndex,1);
+  if(week.semanaColors) week.semanaColors.splice(groupIndex,1);
   deleteConfirmDayId = null;
   save();
   renderTickets();
