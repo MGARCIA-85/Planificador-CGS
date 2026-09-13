@@ -143,8 +143,8 @@
     opacity:0.9;
   }
   .drag-handle:active{cursor:grabbing;}
-  .client-drag-handle.mark-green{
-    background:#7BFA54;
+  .client-drag-handle.mark-gray{
+    background:#D1D5DB;
     border-radius:50%;
     padding:2px 4px;
     display:inline-block;
@@ -1328,7 +1328,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v74';
+const APP_VERSION = 'v75';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1580,10 +1580,17 @@ function migrateOldData(){
       if(!week.slotMarks){
         week.slotMarks = {};
         if(Array.isArray(week.copiedClients)){
-          week.copiedClients.forEach(key=>{ week.slotMarks[key] = 'green'; });
+          week.copiedClients.forEach(key=>{ week.slotMarks[key] = 'gray'; });
         }
         delete week.copiedClients;
         migrated = true;
+      } else {
+        Object.keys(week.slotMarks).forEach(key=>{
+          if(week.slotMarks[key]==='green'){
+            week.slotMarks[key] = 'gray';
+            migrated = true;
+          }
+        });
       }
       if(!week.semanaColors){
         week.semanaColors = [];
@@ -1663,7 +1670,7 @@ function toISODateLocal(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-function getCopiedVisitsByDate(){
+function getScheduledVisitsByDate(){
   const map = {};
   const seenPerDate = {};
   const months = currentMonth().weeks;
@@ -1676,11 +1683,11 @@ function getCopiedVisitsByDate(){
       const iso = toISODateLocal(realDate);
       day.clientSlots.forEach((clientId, slotIdx)=>{
         const copyKey = day.id + ':' + slotIdx;
-        if(clientId && week.slotMarks[copyKey]==='green'){
+        if(clientId){
           if(!map[iso]){ map[iso] = []; seenPerDate[iso] = new Set(); }
           if(seenPerDate[iso].has(clientId)) return;
           seenPerDate[iso].add(clientId);
-          map[iso].push({ clientId, weekLabel: week.label, dayTitulo: day.titulo });
+          map[iso].push({ clientId, weekLabel: week.label, dayTitulo: day.titulo, mark: week.slotMarks[copyKey] || null });
         }
       });
     });
@@ -2829,7 +2836,7 @@ function renderTickets(){
         const copyKey = day.id + ':' + i;
         const mark = week.slotMarks[copyKey] || null;
         const occurrenceCount = monthClientCounts[clientId] || 1;
-        const markClass = mark==='green' ? ' mark-green' : (mark==='cyan' ? ' mark-cyan' : '');
+        const markClass = mark==='gray' ? ' mark-gray' : (mark==='cyan' ? ' mark-cyan' : '');
         row.innerHTML = `
           <span class="drag-handle client-drag-handle${!reorderModeActive?markClass:''}" title="${reorderModeActive?'Arrastrar para reordenar':'Tocar para copiar/cambiar marca'}">${reorderModeActive?'☰':'👤'}</span>
           <span class="slot-num">${visitCounter}</span>
@@ -2842,8 +2849,8 @@ function renderTickets(){
             e.stopPropagation();
             if(!mark){
               copyToClipboard(c ? (c.nombre||'') : '');
-              week.slotMarks[copyKey] = 'green';
-            } else if(mark==='green'){
+              week.slotMarks[copyKey] = 'gray';
+            } else if(mark==='gray'){
               week.slotMarks[copyKey] = 'cyan';
             } else {
               delete week.slotMarks[copyKey];
@@ -3601,7 +3608,7 @@ function renderCalendarView(){
   }
   document.getElementById('calMonthLabel').textContent = formatCalendarMonth({month:calViewMonth, year:calViewYear});
 
-  const visitsByDate = getCopiedVisitsByDate();
+  const visitsByDate = getScheduledVisitsByDate();
   const grid = document.getElementById('calendarGrid');
   grid.innerHTML = '';
 
@@ -3641,7 +3648,7 @@ function renderCalendarView(){
 function renderCalendarDayDetail(visitsByDate){
   const wrap = document.getElementById('calendarDayDetail');
   if(!calSelectedDate){
-    wrap.innerHTML = `<div class="empty-state">Toca un día para ver los clientes ya copiados/visitados ese día.</div>`;
+    wrap.innerHTML = `<div class="empty-state">Toca un día para ver los clientes programados ese día.</div>`;
     return;
   }
   const visits = visitsByDate[calSelectedDate] || [];
@@ -3650,14 +3657,16 @@ function renderCalendarDayDetail(visitsByDate){
   const titleTxt = formatShortDate(dObj) + ' de ' + yy;
 
   if(visits.length===0){
-    wrap.innerHTML = `<div class="section-title"><span>${titleTxt}</span></div><div class="empty-state">Sin clientes copiados/visitados este día.</div>`;
+    wrap.innerHTML = `<div class="section-title"><span>${titleTxt}</span></div><div class="empty-state">Sin clientes programados este día.</div>`;
     return;
   }
 
   const cards = visits.map(v=>{
     const c = clientById(v.clientId);
     if(!c) return '';
+    const markClass = v.mark==='gray' ? ' mark-gray' : (v.mark==='cyan' ? ' mark-cyan' : '');
     return `<div class="visit-card">
+      <span class="client-drag-handle${markClass}" style="margin-right:8px;">👤</span>
       <div>
         <div class="vname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
         <div class="vmeta">${[c.direccion, c.telefono, c.contacto].filter(Boolean).join(' · ')}</div>
