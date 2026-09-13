@@ -1328,7 +1328,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v75';
+const APP_VERSION = 'v76';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3205,7 +3205,8 @@ function exportBackup(){
     clientes: state.clientes,
     meses: state.meses,
     priorityOrder: state.priorityOrder,
-    priorityColors: state.priorityColors
+    priorityColors: state.priorityColors,
+    customWeekColors: state.customWeekColors
   };
   const dateStr = new Date().toISOString().slice(0,10);
   const filename = `planificador-cgs-respaldo-${dateStr}.json`;
@@ -3271,6 +3272,7 @@ function restoreFromBackupJSON(jsonText){
     ? data.priorityOrder : PRIORITY_RANK.slice();
   state.priorityColors = (data.priorityColors && typeof data.priorityColors==='object')
     ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
+  state.customWeekColors = Array.isArray(data.customWeekColors) ? data.customWeekColors : [];
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
