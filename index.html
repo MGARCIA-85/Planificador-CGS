@@ -143,8 +143,15 @@
     opacity:0.9;
   }
   .drag-handle:active{cursor:grabbing;}
-  .client-drag-handle.copied{
-    background:#22C55E;
+  .client-drag-handle.mark-green{
+    background:#7BFA54;
+    border-radius:50%;
+    padding:2px 4px;
+    display:inline-block;
+    line-height:1;
+  }
+  .client-drag-handle.mark-cyan{
+    background:#7BFAFD;
     border-radius:50%;
     padding:2px 4px;
     display:inline-block;
@@ -357,6 +364,27 @@
   }
   .month-year-row select{flex:1;}
   #weekOfMonthList{max-height:280px;overflow-y:auto;margin-bottom:8px;}
+  .color-swatch-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .color-swatch-btn{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    border:1px solid var(--line);
+  }
+  .color-swatch-btn.selected{
+    border:3px solid var(--ink);
+  }
+  .color-swatch-add{
+    background:var(--surface);
+    font-size:22px;
+    color:var(--muted);
+    border-style:dashed;
+  }
   .week-of-month-option{
     padding:10px 12px;
     border:1px solid var(--line);
@@ -1276,6 +1304,17 @@
   </div>
 </div>
 
+<div class="rename-dialog-overlay" id="weekColorOverlay" style="display:none;">
+  <div class="rename-dialog">
+    <div class="rename-dialog-title">Color de esta semana</div>
+    <div id="weekColorSwatches" class="color-swatch-grid"></div>
+    <div class="rename-dialog-actions">
+      <button class="btn-mini" id="weekColorClear">Quitar color</button>
+      <button class="btn-mini" id="weekColorCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
@@ -1289,7 +1328,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v72';
+const APP_VERSION = 'v74';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1349,7 +1388,8 @@ let state = {
   groupMode: 'ruta',
   slotPicker: { open:false, dayId:null, slotIndex:null, openGroups:new Set() },
   priorityOrder: null,
-  priorityColors: null
+  priorityColors: null,
+  customWeekColors: []
 };
 
 function todayMonthKey(){
@@ -1422,6 +1462,7 @@ function priorityStyle(p){
 }
 
 const LS_PRIORITY_COLORS = 'pcgs_priority_colors';
+const LS_CUSTOM_WEEK_COLORS = 'pcgs_custom_week_colors';
 
 function defaultPriorityColors(){
   const colors = {};
@@ -1434,6 +1475,7 @@ function save(){
   localStorage.setItem(LS_MESES, JSON.stringify(state.meses));
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
   localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
+  localStorage.setItem(LS_CUSTOM_WEEK_COLORS, JSON.stringify(state.customWeekColors));
 }
 
 function load(){
@@ -1450,6 +1492,10 @@ function load(){
     const defaults = defaultPriorityColors();
     state.priorityColors = (storedColors && typeof storedColors==='object') ? Object.assign(defaults, storedColors) : defaults;
   }catch(e){ state.priorityColors = defaultPriorityColors(); }
+  try{
+    const storedCustom = JSON.parse(localStorage.getItem(LS_CUSTOM_WEEK_COLORS));
+    state.customWeekColors = Array.isArray(storedCustom) ? storedCustom : [];
+  }catch(e){ state.customWeekColors = []; }
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
@@ -1531,8 +1577,12 @@ function migrateOldData(){
         week.semanaFechas = [];
         migrated = true;
       }
-      if(!week.copiedClients){
-        week.copiedClients = [];
+      if(!week.slotMarks){
+        week.slotMarks = {};
+        if(Array.isArray(week.copiedClients)){
+          week.copiedClients.forEach(key=>{ week.slotMarks[key] = 'green'; });
+        }
+        delete week.copiedClients;
         migrated = true;
       }
       if(!week.semanaColors){
@@ -1558,7 +1608,7 @@ function newWeek(n, label, calendarMonth){
     semanaTitulos: [],
     semanaFechas: [],
     semanaColors: [],
-    copiedClients: [],
+    slotMarks: {},
     days: DIAS.map(d => ({ id:newDayId(), title:d.label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() }))
   };
 }
@@ -1569,7 +1619,7 @@ function duplicateWeek(week, newCalendarMonth, newLabel){
   clone.calendarMonth = newCalendarMonth || null;
   if(!clone.semanaFechas) clone.semanaFechas = [];
   if(!clone.semanaColors) clone.semanaColors = [];
-  if(!clone.copiedClients) clone.copiedClients = [];
+  if(!clone.slotMarks) clone.slotMarks = {};
   clone.days.forEach(d=> { if(d) d.id = newDayId(); });
   return clone;
 }
@@ -1626,7 +1676,7 @@ function getCopiedVisitsByDate(){
       const iso = toISODateLocal(realDate);
       day.clientSlots.forEach((clientId, slotIdx)=>{
         const copyKey = day.id + ':' + slotIdx;
-        if(clientId && week.copiedClients.includes(copyKey)){
+        if(clientId && week.slotMarks[copyKey]==='green'){
           if(!map[iso]){ map[iso] = []; seenPerDate[iso] = new Set(); }
           if(seenPerDate[iso].has(clientId)) return;
           seenPerDate[iso].add(clientId);
@@ -2439,22 +2489,18 @@ function renderTickets(){
         ${week.calendarMonth ? `<span class="week-cal-btn${fechaSemana?' set':''}" title="Elegir semana real del mes">📅</span>` : ''}
         ${reorderModeActive ? `<span class="week-copy-btn" title="Copiar esta semana a otro mes">⧉</span>` : ''}
         <span class="week-color-btn" title="Color de esta semana">🎨</span>
-        <input type="color" class="week-color-input" style="display:none;" value="${semanaColor || '#E8A79A'}">
         <span class="week-title-strip-inner">
           <span class="week-title-text">${titulo || '+ Título'}</span>
           ${reorderModeActive ? `<span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">☰</span>` : ''}
         </span>
       `;
-      const colorInput = titleStrip.querySelector('.week-color-input');
       titleStrip.querySelector('.week-color-btn').onclick = (e)=>{
         e.stopPropagation();
-        colorInput.click();
-      };
-      colorInput.oninput = (e)=>{
-        e.stopPropagation();
-        week.semanaColors[groupIndex] = colorInput.value;
-        save();
-        renderTickets();
+        openWeekColorPicker(semanaColor, (chosenColor)=>{
+          week.semanaColors[groupIndex] = chosenColor;
+          save();
+          renderTickets();
+        });
       };
       const weekCopyBtn = titleStrip.querySelector('.week-copy-btn');
       if(weekCopyBtn){
@@ -2781,10 +2827,11 @@ function renderTickets(){
         visitCounter++;
         const c = clientById(clientId);
         const copyKey = day.id + ':' + i;
-        const isCopied = week.copiedClients.includes(copyKey);
+        const mark = week.slotMarks[copyKey] || null;
         const occurrenceCount = monthClientCounts[clientId] || 1;
+        const markClass = mark==='green' ? ' mark-green' : (mark==='cyan' ? ' mark-cyan' : '');
         row.innerHTML = `
-          <span class="drag-handle client-drag-handle${isCopied&&!reorderModeActive?' copied':''}" title="${reorderModeActive?'Arrastrar para reordenar':'Copiar nombre y marcar'}">${reorderModeActive?'☰':'👤'}</span>
+          <span class="drag-handle client-drag-handle${!reorderModeActive?markClass:''}" title="${reorderModeActive?'Arrastrar para reordenar':'Tocar para copiar/cambiar marca'}">${reorderModeActive?'☰':'👤'}</span>
           <span class="slot-num">${visitCounter}</span>
           <span class="slot-name slot-name-clickable" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
           ${occurrenceCount>1 ? `<span class="repeat-badge" title="Este cliente aparece ${occurrenceCount} veces este mes">×${occurrenceCount}</span>` : ''}
@@ -2793,8 +2840,14 @@ function renderTickets(){
         if(!reorderModeActive){
           row.querySelector('.client-drag-handle').onclick = (e)=>{
             e.stopPropagation();
-            copyToClipboard(c ? (c.nombre||'') : '');
-            if(!week.copiedClients.includes(copyKey)) week.copiedClients.push(copyKey);
+            if(!mark){
+              copyToClipboard(c ? (c.nombre||'') : '');
+              week.slotMarks[copyKey] = 'green';
+            } else if(mark==='green'){
+              week.slotMarks[copyKey] = 'cyan';
+            } else {
+              delete week.slotMarks[copyKey];
+            }
             save();
             renderTickets();
           };
@@ -3377,6 +3430,57 @@ function copySemanaToAnotherMonth(sourceWeek, sourceGroupIndex){
       toast('Semana copiada correctamente.');
     });
   });
+}
+
+function openWeekColorPicker(currentColor, onPick){
+  const overlay = document.getElementById('weekColorOverlay');
+  const grid = document.getElementById('weekColorSwatches');
+  grid.innerHTML = '';
+
+  const close = ()=>{ overlay.style.display = 'none'; };
+
+  state.customWeekColors.forEach(hex=>{
+    const sw = document.createElement('button');
+    sw.className = 'color-swatch-btn' + (currentColor===hex ? ' selected' : '');
+    sw.style.background = hex;
+    sw.onclick = ()=>{
+      close();
+      onPick(hex);
+    };
+    grid.appendChild(sw);
+  });
+
+  const addSw = document.createElement('button');
+  addSw.className = 'color-swatch-btn color-swatch-add';
+  addSw.textContent = '+';
+  addSw.title = 'Elegir un color nuevo';
+  grid.appendChild(addSw);
+
+  const nativeInput = document.createElement('input');
+  nativeInput.type = 'color';
+  nativeInput.style.display = 'none';
+  nativeInput.value = currentColor || '#E8A79A';
+  grid.appendChild(nativeInput);
+
+  addSw.onclick = ()=> nativeInput.click();
+  nativeInput.oninput = ()=>{
+    const hex = nativeInput.value;
+    let palette = state.customWeekColors.filter(c=> c!==hex);
+    palette.unshift(hex);
+    if(palette.length>4) palette = palette.slice(0,4);
+    state.customWeekColors = palette;
+    save();
+    close();
+    onPick(hex);
+  };
+
+  overlay.style.display = 'flex';
+  document.getElementById('weekColorCancel').onclick = close;
+  document.getElementById('weekColorClear').onclick = ()=>{
+    close();
+    onPick(null);
+  };
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
 }
 
 function openMonthYearPicker(title, onPick){
