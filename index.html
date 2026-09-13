@@ -167,9 +167,15 @@
     font-weight:600;
   }
   .week-pill.add{color:var(--accent);border-style:dashed;}
-  .week-pill .edit-pencil{margin-left:6px;opacity:0.85;}
+  .week-pill .edit-pencil{margin-left:20px;opacity:0.85;}
+  .week-pill .pick-other-month{
+    margin-left:20px;
+    opacity:0.9;
+    font-weight:700;
+    font-size:20px;
+  }
   .week-pill .move-week{
-    margin-left:5px;
+    margin-left:20px;
     opacity:0.9;
     font-weight:700;
     font-size:15px;
@@ -359,6 +365,16 @@
     font-size:13.5px;
     font-weight:600;
   }
+  .list-picker-group-header{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:0.3px;
+    margin:12px 0 6px;
+  }
+  .list-picker-group-header:first-child{margin-top:0;}
+  .week-of-month-option.grouped{margin-left:10px;}
   .week-of-month-option.selected{
     border-color:var(--accent);
     background:#E4EFE8;
@@ -436,6 +452,13 @@
   .client-row.pickable:active{background:var(--bg);}
   .client-info .cname{font-size:13.5px;font-weight:600;}
   .client-info .cmeta{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .client-row.already-assigned{background:#FFF8E1;}
+  .cassigned-tag{
+    font-size:11px;
+    font-weight:700;
+    color:#B8860B;
+    margin-top:2px;
+  }
 
   /* Day cards (Programación tab) — estilo inspirado en la hoja de Excel del usuario */
   :root{
@@ -494,6 +517,23 @@
     opacity:0.8;
     z-index:1;
   }
+  .week-copy-btn{
+    position:absolute;
+    top:9px;
+    left:6px;
+    font-size:12px;
+    opacity:0.8;
+    z-index:1;
+  }
+  .week-color-btn{
+    position:absolute;
+    bottom:6px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:12px;
+    opacity:0.8;
+    z-index:1;
+  }
   .week-cal-btn.set{
     background:#22C55E;
     border-radius:50%;
@@ -505,7 +545,7 @@
     gap:8px;
   }
   .week-row-days .ticket{
-    flex:0 0 336px;
+    flex:0 0 368px;
   }
   .ticket{
     min-width:0;
@@ -516,6 +556,26 @@
     border-radius:var(--radius);
     overflow:hidden;
     padding:0;
+  }
+  .ticket.ticket-empty{
+    border-style:dashed;
+    background:none;
+  }
+  .ticket-empty-body{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:150px;
+  }
+  .add-empty-day-btn{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1px dashed var(--muted);
+    background:none;
+    color:var(--muted);
+    font-size:22px;
   }
   .day-strip{
     flex:0 0 auto;
@@ -602,6 +662,11 @@
     font-size:12.5px;padding:3px 5px;
   }
   .day-actions button.trash{color:var(--danger);}
+  .day-actions button.pending-swap{
+    background:#22C55E;
+    border-radius:50%;
+    color:#fff;
+  }
   .day-name-input{
     font-family:Georgia,serif;
     font-weight:700;
@@ -639,10 +704,6 @@
     padding-right:6px;
   }
   .slot-name-clickable{cursor:pointer;}
-  .slot-copy{
-    background:none;border:none;color:var(--muted);
-    font-size:13px;line-height:1;padding:2px 5px;flex:0 0 auto;
-  }
   .slot-empty{
     flex:1;
     min-height:16px;
@@ -655,6 +716,16 @@
     color:#3E6E9E;
     font-weight:700;
     padding-right:4px;
+  }
+  .repeat-badge{
+    flex:0 0 auto;
+    font-size:9.5px;
+    font-weight:700;
+    color:#B8860B;
+    background:#FFF3D6;
+    border-radius:6px;
+    padding:1px 5px;
+    margin-left:4px;
   }
   .slot-move{
     display:flex;
@@ -688,6 +759,13 @@
     color:var(--muted);
     margin-right:4px;
   }
+  .client-detail-card .detail-name{
+    font-weight:700;
+    font-size:14px;
+    padding-bottom:6px;
+    margin-bottom:4px;
+    border-bottom:1px solid var(--line);
+  }
   .add-day-card{
     display:flex;
     align-items:center;
@@ -714,6 +792,12 @@
   .picker-actions-top{
     justify-content:flex-end;
     margin-bottom:4px;
+    gap:8px;
+  }
+  #inlinePickerShowAssigned.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
   }
   .inline-picker .client-list-flat{max-height:260px;overflow-y:auto;}
   .delete-confirm-panel .delete-option{
@@ -1182,6 +1266,16 @@
   </div>
 </div>
 
+<div class="rename-dialog-overlay" id="genericListOverlay" style="display:none;">
+  <div class="rename-dialog">
+    <div class="rename-dialog-title" id="genericListTitle"></div>
+    <div id="genericListItems" style="max-height:320px;overflow-y:auto;"></div>
+    <div class="rename-dialog-actions">
+      <button class="btn-mini" id="genericListCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
@@ -1195,7 +1289,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v55';
+const APP_VERSION = 'v70';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1255,8 +1349,7 @@ let state = {
   groupMode: 'ruta',
   slotPicker: { open:false, dayId:null, slotIndex:null, openGroups:new Set() },
   priorityOrder: null,
-  priorityColors: null,
-  copiedClients: new Set()
+  priorityColors: null
 };
 
 function todayMonthKey(){
@@ -1329,7 +1422,6 @@ function priorityStyle(p){
 }
 
 const LS_PRIORITY_COLORS = 'pcgs_priority_colors';
-const LS_COPIED_CLIENTS = 'pcgs_copied_clients';
 
 function defaultPriorityColors(){
   const colors = {};
@@ -1342,7 +1434,6 @@ function save(){
   localStorage.setItem(LS_MESES, JSON.stringify(state.meses));
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
   localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
-  localStorage.setItem(LS_COPIED_CLIENTS, JSON.stringify(Array.from(state.copiedClients)));
 }
 
 function load(){
@@ -1359,10 +1450,6 @@ function load(){
     const defaults = defaultPriorityColors();
     state.priorityColors = (storedColors && typeof storedColors==='object') ? Object.assign(defaults, storedColors) : defaults;
   }catch(e){ state.priorityColors = defaultPriorityColors(); }
-  try{
-    const storedCopied = JSON.parse(localStorage.getItem(LS_COPIED_CLIENTS));
-    state.copiedClients = new Set(Array.isArray(storedCopied) ? storedCopied : []);
-  }catch(e){ state.copiedClients = new Set(); }
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
@@ -1397,6 +1484,7 @@ function migrateOldData(){
         migrated = true;
       }
       week.days.forEach(day=>{
+        if(!day) return;
         if(!day.clientSlots){
           day.clientSlots = toClientSlots(day.clientIds);
           delete day.clientIds;
@@ -1443,6 +1531,14 @@ function migrateOldData(){
         week.semanaFechas = [];
         migrated = true;
       }
+      if(!week.copiedClients){
+        week.copiedClients = [];
+        migrated = true;
+      }
+      if(!week.semanaColors){
+        week.semanaColors = [];
+        migrated = true;
+      }
     });
   });
   if(migrated) save();
@@ -1461,6 +1557,8 @@ function newWeek(n, label, calendarMonth){
     filtro: defaultWeekFilter(),
     semanaTitulos: [],
     semanaFechas: [],
+    semanaColors: [],
+    copiedClients: [],
     days: DIAS.map(d => ({ id:newDayId(), title:d.label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() }))
   };
 }
@@ -1470,7 +1568,9 @@ function duplicateWeek(week, newCalendarMonth, newLabel){
   clone.label = newLabel || ('Copia de ' + week.label);
   clone.calendarMonth = newCalendarMonth || null;
   if(!clone.semanaFechas) clone.semanaFechas = [];
-  clone.days.forEach(d=> d.id = newDayId());
+  if(!clone.semanaColors) clone.semanaColors = [];
+  if(!clone.copiedClients) clone.copiedClients = [];
+  clone.days.forEach(d=> { if(d) d.id = newDayId(); });
   return clone;
 }
 
@@ -1520,11 +1620,13 @@ function getCopiedVisitsByDate(){
   months.forEach(week=>{
     if(!week.calendarMonth) return;
     week.days.forEach((day, dayIdx)=>{
+      if(!day) return;
       const realDate = getDayRealDate(week, dayIdx);
       if(!realDate) return;
       const iso = toISODateLocal(realDate);
-      day.clientSlots.forEach(clientId=>{
-        if(clientId && state.copiedClients.has(clientId)){
+      day.clientSlots.forEach((clientId, slotIdx)=>{
+        const copyKey = day.id + ':' + slotIdx;
+        if(clientId && week.copiedClients.includes(copyKey)){
           if(!map[iso]){ map[iso] = []; seenPerDate[iso] = new Set(); }
           if(seenPerDate[iso].has(clientId)) return;
           seenPerDate[iso].add(clientId);
@@ -1561,13 +1663,14 @@ function setSemanaGroups(week, groups){
 function ensureCurrentDayKey(){
   const week = currentWeek();
   if(!week.days.length){ state.currentDayKey = null; return; }
-  if(!week.days.find(d => d.id === state.currentDayKey)){
-    state.currentDayKey = week.days[0].id;
+  if(!week.days.find(d => d && d.id === state.currentDayKey)){
+    const firstReal = week.days.find(d => d);
+    state.currentDayKey = firstReal ? firstReal.id : null;
   }
 }
 
 function dayById(week, id){
-  return week.days.find(d => d.id === id);
+  return week.days.find(d => d && d.id === id);
 }
 
 function currentMonth(){
@@ -1679,7 +1782,7 @@ function renderWeekStrip(){
   const realBtn = document.createElement('button');
   realBtn.className = 'week-pill real-month-btn' + (activeIsReal ? ' active':'');
   const displayCM = activeIsReal ? activeWeekObj.calendarMonth : todayCM;
-  realBtn.innerHTML = `<span>📅 ${formatCalendarMonth(displayCM).toUpperCase()}</span>`;
+  realBtn.innerHTML = `<span class="real-month-label">📅 ${formatCalendarMonth(displayCM).toUpperCase()}</span>`;
 
   if(activeIsReal){
     const idx = weeks.indexOf(activeWeekObj);
@@ -1718,8 +1821,12 @@ function renderWeekStrip(){
     realBtn.appendChild(del2);
   }
 
-  realBtn.onclick = (e)=>{
-    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
+  const pickOther = document.createElement('span');
+  pickOther.className = 'pick-other-month';
+  pickOther.title = 'Ver otro mes';
+  pickOther.textContent = '▾';
+  pickOther.onclick = (e)=>{
+    e.stopPropagation();
     openMonthYearPicker('¿Qué mes quieres ver?', ({month, year})=>{
       const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===month && w.calendarMonth.year===year);
       if(found){
@@ -1732,6 +1839,21 @@ function renderWeekStrip(){
         toast(`Aún no has creado ${formatCalendarMonth({month,year})}. Usa "+ Mes" para crearlo.`);
       }
     });
+  };
+  realBtn.appendChild(pickOther);
+
+  realBtn.onclick = (e)=>{
+    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week, .pick-other-month')) return;
+    const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===todayCM.month && w.calendarMonth.year===todayCM.year);
+    if(found){
+      state.currentWeekIndex = weeks.indexOf(found);
+      closeSlotPicker();
+      renderWeekStrip();
+      renderTickets();
+      renderCalendarView();
+    } else {
+      toast(`Aún no has creado ${formatCalendarMonth(todayCM)}. Usa "+ Mes" para crearlo.`);
+    }
   };
   pillsList.appendChild(realBtn);
 
@@ -1812,7 +1934,7 @@ function groupClients(list){
 
 function assignedClientIdsThisWeek(){
   const ids = new Set();
-  currentWeek().days.forEach(d=> d.clientSlots.forEach(id => { if(id) ids.add(id); }));
+  currentWeek().days.forEach(d=> { if(d) d.clientSlots.forEach(id => { if(id) ids.add(id); }); });
   return ids;
 }
 
@@ -1948,9 +2070,12 @@ function renderWeekFilterControls_refresh(){
 
 let filterPanelState = null;
 let reorderModeActive = false;
+let pendingSwapDayIdx = null;
+let showAssignedInPicker = false;
 
 function setReorderMode(active){
   reorderModeActive = active;
+  pendingSwapDayIdx = null;
   const btn = document.getElementById('toggleReorderBtn');
   btn.classList.toggle('active', reorderModeActive);
   btn.textContent = reorderModeActive ? '☰ Moviendo…' : '☰ Mover';
@@ -2097,10 +2222,10 @@ function renderClientGroupList(opts){
     const id = c.idCliente || c.idSistema;
     if(excludeIds.has(id)) return false;
     if(!q) return true;
-    return (c.nombre||'').toLowerCase().includes(q) ||
-           (c.ruta||'').toLowerCase().includes(q) ||
-           (c.sector||'').toLowerCase().includes(q) ||
-           (c.departamento||'').toLowerCase().includes(q);
+    return stripAccents((c.nombre||'').toLowerCase()).includes(q) ||
+           stripAccents((c.ruta||'').toLowerCase()).includes(q) ||
+           stripAccents((c.sector||'').toLowerCase()).includes(q) ||
+           stripAccents((c.departamento||'').toLowerCase()).includes(q);
   });
   const wrap = document.getElementById(opts.wrapId);
   wrap.innerHTML = '';
@@ -2253,7 +2378,7 @@ function renderClientesView(){
   document.getElementById('clientSection').style.display = hasClients ? 'block':'none';
   if(!hasClients) return;
 
-  const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const query = stripAccents((document.getElementById('searchInput').value || '').toLowerCase().trim());
   renderClientGroupList({
     wrapId: 'rutaGroups',
     mode: 'browse',
@@ -2283,6 +2408,14 @@ function renderTickets(){
   const week = currentWeek();
   ensureCurrentDayKey();
 
+  const monthClientCounts = {};
+  week.days.forEach(d=>{
+    if(!d) return;
+    d.clientSlots.forEach(id=>{
+      if(id) monthClientCounts[id] = (monthClientCounts[id]||0) + 1;
+    });
+  });
+
   const GROUP_SIZE = DAYS_PER_SEMANA;
   let rowEl = null;
   let daysContainer = null;
@@ -2300,13 +2433,36 @@ function renderTickets(){
       const fechaSemana = week.semanaFechas[groupIndex] || null;
       const titleStrip = document.createElement('div');
       titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset');
+      const semanaColor = week.semanaColors[groupIndex] || null;
+      if(semanaColor) titleStrip.style.background = semanaColor;
       titleStrip.innerHTML = `
         ${week.calendarMonth ? `<span class="week-cal-btn${fechaSemana?' set':''}" title="Elegir semana real del mes">📅</span>` : ''}
+        ${reorderModeActive ? `<span class="week-copy-btn" title="Copiar esta semana a otro mes">⧉</span>` : ''}
+        <span class="week-color-btn" title="Color de esta semana">🎨</span>
+        <input type="color" class="week-color-input" style="display:none;" value="${semanaColor || '#E8A79A'}">
         <span class="week-title-strip-inner">
           <span class="week-title-text">${titulo || '+ Título'}</span>
           ${reorderModeActive ? `<span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">☰</span>` : ''}
         </span>
       `;
+      const colorInput = titleStrip.querySelector('.week-color-input');
+      titleStrip.querySelector('.week-color-btn').onclick = (e)=>{
+        e.stopPropagation();
+        colorInput.click();
+      };
+      colorInput.oninput = (e)=>{
+        e.stopPropagation();
+        week.semanaColors[groupIndex] = colorInput.value;
+        save();
+        renderTickets();
+      };
+      const weekCopyBtn = titleStrip.querySelector('.week-copy-btn');
+      if(weekCopyBtn){
+        weekCopyBtn.onclick = (e)=>{
+          e.stopPropagation();
+          copySemanaToAnotherMonth(week, groupIndex);
+        };
+      }
       titleStrip.querySelector('.week-title-text').onclick = (e)=>{
         e.stopPropagation();
         const v = prompt('Título de esta semana:', week.semanaTitulos[groupIndex] || '');
@@ -2343,6 +2499,30 @@ function renderTickets(){
       grid.appendChild(rowEl);
     }
 
+    const posInRowEmpty = dayIdx % DAYS_PER_SEMANA;
+    const weekdayNameEmpty = WEEKDAY_LABELS[posInRowEmpty];
+    if(!day){
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'ticket ticket-empty';
+      emptyDiv.innerHTML = `
+        <div class="day-strip">
+          <span class="day-strip-inner"><span class="day-name-text">${weekdayNameEmpty}</span></span>
+        </div>
+        <div class="ticket-body ticket-empty-body">
+          <button class="add-empty-day-btn" title="Agregar día aquí">+</button>
+        </div>
+      `;
+      const emptyGroupColor = week.semanaColors[Math.floor(dayIdx / DAYS_PER_SEMANA)] || null;
+      if(emptyGroupColor) emptyDiv.querySelector('.day-strip').style.background = emptyGroupColor;
+      emptyDiv.querySelector('.add-empty-day-btn').onclick = ()=>{
+        week.days[dayIdx] = { id:newDayId(), title:DIAS[posInRowEmpty].label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() };
+        save();
+        renderTickets();
+      };
+      daysContainer.appendChild(emptyDiv);
+      return;
+    }
+
     const filled = day.clientSlots.filter(Boolean);
     const hasRutas = day.rutas && day.rutas.length>0;
     const hasSectores = day.sectores && day.sectores.length>0;
@@ -2362,6 +2542,9 @@ function renderTickets(){
         <span class="day-name-text">${weekdayName}</span>
       </span>
     `;
+    const dayGroupIndex = Math.floor(dayIdx / DAYS_PER_SEMANA);
+    const dayGroupColor = week.semanaColors[dayGroupIndex] || null;
+    if(dayGroupColor) strip.style.background = dayGroupColor;
     div.appendChild(strip);
 
     const body = document.createElement('div');
@@ -2376,6 +2559,8 @@ function renderTickets(){
         <span class="route-title titulo-text${(hasTitulo||hasRutas)?'':' unset'}">${titleText}</span>
       </div>
       <div class="day-actions">
+        ${reorderModeActive ? `<button class="move-to-week${pendingSwapDayIdx===dayIdx?' pending-swap':''}" title="Mover a otra semana">🔀</button>` : ''}
+        ${reorderModeActive ? `<button class="copy-day-btn" title="Copiar este día a otro mes">⧉</button>` : ''}
         <button class="trash" title="Eliminar día">🗑</button>
       </div>
     `;
@@ -2388,6 +2573,34 @@ function renderTickets(){
         renderTickets();
       }
     };
+    const moveToWeekBtn = head.querySelector('.move-to-week');
+    if(moveToWeekBtn){
+      moveToWeekBtn.onclick = (e)=>{
+        e.stopPropagation();
+        if(pendingSwapDayIdx===null){
+          pendingSwapDayIdx = dayIdx;
+          toast('Ahora toca 🔀 en el día con el que quieres intercambiarlo.');
+          renderTickets();
+        } else if(pendingSwapDayIdx===dayIdx){
+          pendingSwapDayIdx = null;
+          renderTickets();
+        } else {
+          const tmp = week.days[pendingSwapDayIdx];
+          week.days[pendingSwapDayIdx] = week.days[dayIdx];
+          week.days[dayIdx] = tmp;
+          pendingSwapDayIdx = null;
+          save();
+          renderTickets();
+        }
+      };
+    }
+    const copyDayBtn = head.querySelector('.copy-day-btn');
+    if(copyDayBtn){
+      copyDayBtn.onclick = (e)=>{
+        e.stopPropagation();
+        copyDayToAnotherMonth(day);
+      };
+    }
     head.querySelector('.trash').onclick = (e)=>{
       e.stopPropagation();
       deleteConfirmDayId = day.id;
@@ -2529,7 +2742,10 @@ function renderTickets(){
         const inline = document.createElement('div');
         inline.className = 'inline-picker';
         inline.innerHTML = `
-          <div class="picker-actions picker-actions-top"><button class="btn-mini" id="inlinePickerCancel">✕ Cancelar</button></div>
+          <div class="picker-actions picker-actions-top">
+            <button class="btn-mini" id="inlinePickerCancel">✕ Cancelar</button>
+            <button class="btn-mini" id="inlinePickerShowAssigned">Mostrar programados</button>
+          </div>
           <div class="search-row"><input type="text" id="inlinePickerSearch" placeholder="Buscar cliente..."></div>
           <div id="inlinePickerNote" style="display:none;"></div>
           <div id="inlinePickerResults" class="client-list-flat"></div>
@@ -2540,6 +2756,12 @@ function renderTickets(){
           document.getElementById('inlinePickerCancel').onclick = ()=>{
             state.slotPicker.open = false;
             renderTickets();
+          };
+          document.getElementById('inlinePickerShowAssigned').onclick = (e)=>{
+            showAssignedInPicker = !showAssignedInPicker;
+            e.target.classList.toggle('active', showAssignedInPicker);
+            e.target.textContent = showAssignedInPicker ? 'Ocultar programados' : 'Mostrar programados';
+            renderInlinePickerResults();
           };
           renderInlinePickerResults();
           const searchInput = document.getElementById('inlinePickerSearch');
@@ -2558,19 +2780,21 @@ function renderTickets(){
       if(clientId){
         visitCounter++;
         const c = clientById(clientId);
-        const isCopied = state.copiedClients.has(clientId);
+        const copyKey = day.id + ':' + i;
+        const isCopied = week.copiedClients.includes(copyKey);
+        const occurrenceCount = monthClientCounts[clientId] || 1;
         row.innerHTML = `
-          <span class="drag-handle client-drag-handle${isCopied&&!reorderModeActive?' copied':''}" title="${reorderModeActive?'Arrastrar para reordenar':'Marcar/quitar copiado'}">${reorderModeActive?'☰':'👤'}</span>
+          <span class="drag-handle client-drag-handle${isCopied&&!reorderModeActive?' copied':''}" title="${reorderModeActive?'Arrastrar para reordenar':'Copiar nombre y marcar'}">${reorderModeActive?'☰':'👤'}</span>
           <span class="slot-num">${visitCounter}</span>
           <span class="slot-name slot-name-clickable" style="${c?priorityStyle(c.prioridad):''}">${c ? (c.nombre||'(sin nombre)') : '(cliente no encontrado)'}</span>
-          <button class="slot-copy" title="Copiar nombre">📋</button>
+          ${occurrenceCount>1 ? `<span class="repeat-badge" title="Este cliente aparece ${occurrenceCount} veces este mes">×${occurrenceCount}</span>` : ''}
           <button class="slot-remove" title="Quitar">×</button>
         `;
         if(!reorderModeActive){
           row.querySelector('.client-drag-handle').onclick = (e)=>{
             e.stopPropagation();
-            if(state.copiedClients.has(clientId)) state.copiedClients.delete(clientId);
-            else state.copiedClients.add(clientId);
+            copyToClipboard(c ? (c.nombre||'') : '');
+            if(!week.copiedClients.includes(copyKey)) week.copiedClients.push(copyKey);
             save();
             renderTickets();
           };
@@ -2582,13 +2806,6 @@ function renderTickets(){
           } else {
             expandedDetail = { dayId: day.id, slotIndex: i };
           }
-          renderTickets();
-        };
-        row.querySelector('.slot-copy').onclick = (e)=>{
-          e.stopPropagation();
-          copyToClipboard(c ? (c.nombre||'') : '');
-          state.copiedClients.add(clientId);
-          save();
           renderTickets();
         };
         row.querySelector('.slot-remove').onclick = (e)=>{
@@ -2607,6 +2824,7 @@ function renderTickets(){
         row.innerHTML = `<span class="slot-empty"></span>`;
         row.onclick = ()=>{
           state.slotPicker = { open:true, dayId:day.id, slotIndex:i, routeFilterActive:((day.rutas&&day.rutas.length>0) || (day.sectores&&day.sectores.length>0)) };
+          showAssignedInPicker = false;
           renderTickets();
         };
         slotList.appendChild(row);
@@ -2627,7 +2845,7 @@ function renderTickets(){
         onMove: (evt)=>{
           if(evt.from===evt.to) return true;
           const destDayId = evt.to.dataset.dayId;
-          const destDay = week.days.find(d=> d.id===destDayId);
+          const destDay = week.days.find(d=> d && d.id===destDayId);
           if(!destDay) return true;
           const destFilled = destDay.clientSlots.filter(Boolean).length;
           if(destFilled >= SLOTS_PER_DAY){
@@ -2650,8 +2868,8 @@ function renderTickets(){
             const moved = arr.splice(evt.oldIndex,1)[0];
             arr.splice(evt.newIndex,0,moved);
           } else {
-            const sourceDay = week.days.find(d=> d.id===sourceDayId);
-            const destDay = week.days.find(d=> d.id===destDayId);
+            const sourceDay = week.days.find(d=> d && d.id===sourceDayId);
+            const destDay = week.days.find(d=> d && d.id===destDayId);
             if(!sourceDay || !destDay) return;
             const moved = sourceDay.clientSlots.splice(evt.oldIndex,1)[0];
             sourceDay.clientSlots.push(null);
@@ -2698,32 +2916,16 @@ function renderTickets(){
     daysContainers.forEach((container)=>{
       new Sortable(container, {
         handle: '.day-drag-handle',
-        group: { name: 'days-cross-semana', pull:true, put:true },
+        draggable: '.ticket',
         animation: 150,
         onEnd: (evt)=>{
-          if(evt.item._pcgsHandled){
-            delete evt.item._pcgsHandled;
-            return;
-          }
-          evt.item._pcgsHandled = true;
-          const sourceGroupIndex = parseInt(evt.from.dataset.groupIndex, 10);
-          const destGroupIndex = parseInt(evt.to.dataset.groupIndex, 10);
-          if(sourceGroupIndex===destGroupIndex){
-            if(evt.oldIndex===evt.newIndex) return;
-            const startIdx = sourceGroupIndex * DAYS_PER_SEMANA;
-            const slice = week.days.slice(startIdx, startIdx + DAYS_PER_SEMANA);
-            const moved = slice.splice(evt.oldIndex,1)[0];
-            slice.splice(evt.newIndex,0,moved);
-            week.days.splice(startIdx, slice.length, ...slice);
-          } else {
-            // Entre semanas distintas: se intercambian los dos días de posición,
-            // así ambas filas se mantienen siempre en 5 días.
-            const sourceFlatIdx = sourceGroupIndex * DAYS_PER_SEMANA + evt.oldIndex;
-            const destFlatIdx = destGroupIndex * DAYS_PER_SEMANA + evt.newIndex;
-            const tmp = week.days[sourceFlatIdx];
-            week.days[sourceFlatIdx] = week.days[destFlatIdx];
-            week.days[destFlatIdx] = tmp;
-          }
+          if(evt.oldIndex===evt.newIndex) return;
+          const groupIndex = parseInt(container.dataset.groupIndex, 10);
+          const startIdx = groupIndex * DAYS_PER_SEMANA;
+          const slice = week.days.slice(startIdx, startIdx + DAYS_PER_SEMANA);
+          const moved = slice.splice(evt.oldIndex,1)[0];
+          slice.splice(evt.newIndex,0,moved);
+          week.days.splice(startIdx, slice.length, ...slice);
           save();
           renderTickets();
         }
@@ -2732,8 +2934,12 @@ function renderTickets(){
   }
 }
 
+function stripAccents(str){
+  return (str||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
 function getEligibleClientsForPicker(query, routeFilter, sectorFilter, weekFiltro, excludeIds){
-  const q = (query||'').toLowerCase().trim();
+  const q = stripAccents((query||'').toLowerCase().trim());
   const filtered = state.clientes.filter(c=>{
     const id = c.idCliente || c.idSistema;
     if(excludeIds.has(id)) return false;
@@ -2746,12 +2952,23 @@ function getEligibleClientsForPicker(query, routeFilter, sectorFilter, weekFiltr
       if(weekFiltro.prioridades.length && !weekFiltro.prioridades.includes(normalizePriority(c.prioridad))) return false;
     }
     if(!q) return true;
-    return (c.nombre||'').toLowerCase().includes(q) ||
-           (c.ruta||'').toLowerCase().includes(q) ||
-           (c.sector||'').toLowerCase().includes(q) ||
-           (c.departamento||'').toLowerCase().includes(q);
+    return stripAccents((c.nombre||'').toLowerCase()).includes(q) ||
+           stripAccents((c.ruta||'').toLowerCase()).includes(q) ||
+           stripAccents((c.sector||'').toLowerCase()).includes(q) ||
+           stripAccents((c.departamento||'').toLowerCase()).includes(q);
   });
   return sortForWeekFilter(filtered, weekFiltro || defaultWeekFilter());
+}
+
+function findAssignedDayLabel(week, clientId){
+  for(let idx=0; idx<week.days.length; idx++){
+    const d = week.days[idx];
+    if(d && d.clientSlots.includes(clientId)){
+      const posInRow = idx % DAYS_PER_SEMANA;
+      return d.titulo && d.titulo.trim() ? d.titulo : WEEKDAY_LABELS[posInRow];
+    }
+  }
+  return null;
 }
 
 function renderInlinePickerResults(){
@@ -2764,7 +2981,8 @@ function renderInlinePickerResults(){
   const dayFilterActive = state.slotPicker.routeFilterActive;
   const routeFilter = (hasRutas && dayFilterActive) ? day.rutas : null;
   const sectorFilter = (hasSectores && dayFilterActive) ? day.sectores : null;
-  const excludeIds = assignedClientIdsThisWeek();
+  const assignedIds = assignedClientIdsThisWeek();
+  const excludeIds = showAssignedInPicker ? new Set() : assignedIds;
   const searchEl = document.getElementById('inlinePickerSearch');
   const query = searchEl ? searchEl.value : '';
   const clients = getEligibleClientsForPicker(query, routeFilter, sectorFilter, wf, excludeIds);
@@ -2809,16 +3027,19 @@ function renderInlinePickerResults(){
     return;
   }
   clients.forEach(c=>{
+    const id = c.idCliente || c.idSistema;
+    const isAssigned = assignedIds.has(id);
+    const assignedLabel = isAssigned ? findAssignedDayLabel(week, id) : null;
     const row = document.createElement('div');
-    row.className = 'client-row pickable';
+    row.className = 'client-row pickable' + (isAssigned ? ' already-assigned' : '');
     row.innerHTML = `
       <div class="client-info">
         <div class="cname" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>
         <div class="cmeta">${[c.prioridad, c.sector, c.telefono].filter(Boolean).join(' · ')}</div>
+        ${isAssigned ? `<div class="cassigned-tag">Ya programado${assignedLabel?(' — '+assignedLabel):''}</div>` : ''}
       </div>
     `;
     row.onclick = ()=>{
-      const id = c.idCliente || c.idSistema;
       day.clientSlots[state.slotPicker.slotIndex] = id;
       state.slotPicker.open = false;
       save();
@@ -2870,7 +3091,7 @@ function deleteOnlyDay(day){
   const week = currentWeek();
   const idx = week.days.indexOf(day);
   if(idx===-1) return;
-  week.days.splice(idx,1);
+  week.days[idx] = null;
   deleteConfirmDayId = null;
   save();
   renderTickets();
@@ -2883,8 +3104,7 @@ function deleteWholeSemana(day){
   const groupIndex = Math.floor(idx / DAYS_PER_SEMANA);
   const startIdx = groupIndex * DAYS_PER_SEMANA;
   const endIdx = Math.min(startIdx + DAYS_PER_SEMANA, week.days.length);
-  week.days.splice(startIdx, endIdx-startIdx);
-  week.semanaTitulos.splice(groupIndex,1);
+  for(let i=startIdx;i<endIdx;i++) week.days[i] = null;
   deleteConfirmDayId = null;
   save();
   renderTickets();
@@ -2897,23 +3117,19 @@ function buildClientDetailCard(c){
   card.className = 'client-detail-card';
   const fields = [
     ['ID Cliente', c.idCliente],
-    ['Contacto', c.contacto],
-    ['Teléfono', c.telefono],
     ['Dirección', c.direccion],
+    ['Prioridad', c.prioridad],
+    ['Ruta', c.ruta],
     ['Departamento', c.departamento],
     ['Sector', c.sector],
-    ['Ruta', c.ruta],
-    ['Tipo', c.tipo],
-    ['Prioridad', c.prioridad]
+    ['Tipo', c.tipo]
   ].filter(([,v])=> v && String(v).trim().length>0);
 
-  if(fields.length===0){
-    card.innerHTML = '<div class="empty-state">No hay más datos disponibles para este cliente.</div>';
-    return card;
-  }
-  card.innerHTML = fields.map(([label,val])=>
+  let html = `<div class="detail-row detail-name" style="${priorityStyle(c.prioridad)}">${c.nombre||'(sin nombre)'}</div>`;
+  html += fields.map(([label,val])=>
     `<div class="detail-row"><span class="detail-label">${label}:</span> ${val}</div>`
   ).join('');
+  card.innerHTML = html;
   return card;
 }
 
@@ -2926,8 +3142,7 @@ function exportBackup(){
     clientes: state.clientes,
     meses: state.meses,
     priorityOrder: state.priorityOrder,
-    priorityColors: state.priorityColors,
-    copiedClients: Array.from(state.copiedClients)
+    priorityColors: state.priorityColors
   };
   const dateStr = new Date().toISOString().slice(0,10);
   const filename = `planificador-cgs-respaldo-${dateStr}.json`;
@@ -2993,7 +3208,6 @@ function restoreFromBackupJSON(jsonText){
     ? data.priorityOrder : PRIORITY_RANK.slice();
   state.priorityColors = (data.priorityColors && typeof data.priorityColors==='object')
     ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
-  state.copiedClients = new Set(Array.isArray(data.copiedClients) ? data.copiedClients : []);
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
@@ -3019,6 +3233,148 @@ function importBackup(file){
 document.getElementById('exportBackupBtn').onclick = exportBackup;
 document.getElementById('importBackupBtn').onclick = ()=> document.getElementById('importBackupFile').click();
 document.getElementById('importBackupFile').addEventListener('change', (e)=> importBackup(e.target.files[0]));
+
+function openListPicker(title, items, onPick){
+  const overlay = document.getElementById('genericListOverlay');
+  document.getElementById('genericListTitle').textContent = title;
+  const wrap = document.getElementById('genericListItems');
+  wrap.innerHTML = '';
+  const close = ()=>{ overlay.style.display = 'none'; };
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className = 'week-of-month-option';
+    row.textContent = item.label;
+    row.onclick = ()=>{
+      close();
+      onPick(item.value);
+    };
+    wrap.appendChild(row);
+  });
+  overlay.style.display = 'flex';
+  document.getElementById('genericListCancel').onclick = close;
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+}
+
+function openGroupedListPicker(title, groups, onPick){
+  const overlay = document.getElementById('genericListOverlay');
+  document.getElementById('genericListTitle').textContent = title;
+  const wrap = document.getElementById('genericListItems');
+  wrap.innerHTML = '';
+  const close = ()=>{ overlay.style.display = 'none'; };
+  groups.forEach(group=>{
+    const header = document.createElement('div');
+    header.className = 'list-picker-group-header';
+    header.textContent = group.header;
+    wrap.appendChild(header);
+    group.items.forEach(item=>{
+      const row = document.createElement('div');
+      row.className = 'week-of-month-option grouped';
+      row.textContent = item.label;
+      row.onclick = ()=>{
+        close();
+        onPick(item.value);
+      };
+      wrap.appendChild(row);
+    });
+  });
+  overlay.style.display = 'flex';
+  document.getElementById('genericListCancel').onclick = close;
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+}
+
+function copyDayToAnotherMonth(sourceDay){
+  const allMonths = currentMonth().weeks;
+  const monthItems = allMonths.map(w=>({label:w.label, value:w}));
+  openListPicker('Copiar este día — ¿a qué mes?', monthItems, (targetWeek)=>{
+    const numRows = Math.ceil(targetWeek.days.length / DAYS_PER_SEMANA);
+    const groups = [];
+    for(let g=0; g<numRows; g++){
+      const semanaTitulo = targetWeek.semanaTitulos[g] || '';
+      const groupItems = [];
+      for(let k=0;k<DAYS_PER_SEMANA;k++){
+        const idx = g*DAYS_PER_SEMANA + k;
+        const d = targetWeek.days[idx];
+        const weekdayName = WEEKDAY_LABELS[k];
+        let label;
+        if(!d){
+          label = `${weekdayName} — (vacío)`;
+        } else {
+          const extra = d.titulo ? ` — ${d.titulo}` : (d.rutas && d.rutas.length ? ` — ${d.rutas.join('/')}` : '');
+          label = `${weekdayName}${extra}`;
+        }
+        groupItems.push({ label, value: idx });
+      }
+      groups.push({ header: `Semana ${g+1}${semanaTitulo?(' — '+semanaTitulo):''}`, items: groupItems });
+    }
+    openGroupedListPicker(`Copiar en "${targetWeek.label}" — ¿en qué día?`, groups, (targetIdx)=>{
+      let targetDay = targetWeek.days[targetIdx];
+      if(!targetDay){
+        targetDay = { id:newDayId(), title:DIAS[targetIdx % DAYS_PER_SEMANA].label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() };
+        targetWeek.days[targetIdx] = targetDay;
+      } else {
+        const hasContent = targetDay.clientSlots.some(Boolean) || (targetDay.titulo && targetDay.titulo.trim());
+        if(hasContent && !confirm('Ese día ya tiene contenido — se reemplazará. ¿Continuar?')) return;
+      }
+      targetDay.titulo = sourceDay.titulo;
+      targetDay.rutas = [...sourceDay.rutas];
+      targetDay.sectores = [...sourceDay.sectores];
+      targetDay.clientSlots = [...sourceDay.clientSlots];
+      save();
+      renderTickets();
+      renderWeekStrip();
+      toast('Día copiado correctamente.');
+    });
+  });
+}
+
+function copySemanaToAnotherMonth(sourceWeek, sourceGroupIndex){
+  const allMonths = currentMonth().weeks;
+  const monthItems = allMonths.map(w=>({label:w.label, value:w}));
+  openListPicker('Copiar esta semana — ¿a qué mes?', monthItems, (targetWeek)=>{
+    const numRows = Math.ceil(targetWeek.days.length / DAYS_PER_SEMANA);
+    const rowItems = [];
+    for(let i=0;i<numRows;i++){
+      const t = targetWeek.semanaTitulos[i] || '';
+      rowItems.push({ label:`Semana ${i+1}${t?(' — '+t):''}`, value:i });
+    }
+    rowItems.push({ label:'+ Agregar como semana nueva', value:'new' });
+    openListPicker(`Copiar en "${targetWeek.label}" — ¿en qué semana?`, rowItems, (targetGroupIndex)=>{
+      let groupIndex = targetGroupIndex;
+      if(groupIndex==='new'){
+        for(let k=0;k<DAYS_PER_SEMANA;k++){
+          targetWeek.days.push({ id:newDayId(), title:DIAS[k].label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() });
+        }
+        groupIndex = Math.floor(targetWeek.days.length / DAYS_PER_SEMANA) - 1;
+      } else {
+        const startIdxCheck = groupIndex*DAYS_PER_SEMANA;
+        const hasContent = targetWeek.days.slice(startIdxCheck, startIdxCheck+DAYS_PER_SEMANA)
+          .some(d=> d && (d.clientSlots.some(Boolean) || (d.titulo && d.titulo.trim())));
+        if(hasContent && !confirm('Esa semana ya tiene contenido — se reemplazará. ¿Continuar?')) return;
+      }
+      const startIdx = groupIndex*DAYS_PER_SEMANA;
+      const sourceStartIdx = sourceGroupIndex*DAYS_PER_SEMANA;
+      for(let k=0;k<DAYS_PER_SEMANA;k++){
+        const srcDay = sourceWeek.days[sourceStartIdx+k];
+        if(!srcDay) continue;
+        let tgtDay = targetWeek.days[startIdx+k];
+        if(!tgtDay){
+          tgtDay = { id:newDayId(), title:DIAS[k].label, titulo:'', rutas:[], sectores:[], clientSlots: emptySlots() };
+          targetWeek.days[startIdx+k] = tgtDay;
+        }
+        tgtDay.titulo = srcDay.titulo;
+        tgtDay.rutas = [...srcDay.rutas];
+        tgtDay.sectores = [...srcDay.sectores];
+        tgtDay.clientSlots = [...srcDay.clientSlots];
+      }
+      if(!targetWeek.semanaTitulos) targetWeek.semanaTitulos = [];
+      targetWeek.semanaTitulos[groupIndex] = sourceWeek.semanaTitulos[sourceGroupIndex] || '';
+      save();
+      renderTickets();
+      renderWeekStrip();
+      toast('Semana copiada correctamente.');
+    });
+  });
+}
 
 function openMonthYearPicker(title, onPick){
   const overlay = document.getElementById('monthYearOverlay');
