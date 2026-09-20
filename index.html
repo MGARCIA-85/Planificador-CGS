@@ -1261,6 +1261,13 @@
           <button class="filter-chip-btn" id="importBackupBtn">⬆ Importar respaldo</button>
           <input type="file" id="importBackupFile" accept=".json" style="display:none;">
         </div>
+        <div style="font-size:11.5px;color:var(--muted);margin:12px 0 8px;">
+          Con tu cuenta de Google conectada (abajo), la app también respalda tus datos solos en tu Drive después de cada cambio — o puedes forzarlo/restaurarlo aquí:
+        </div>
+        <div class="filter-bar" style="overflow:visible;">
+          <button class="filter-chip-btn" id="driveBackupBtn">☁️ Respaldar en Drive ahora</button>
+          <button class="filter-chip-btn" id="driveRestoreBtn">⬇️ Restaurar desde Drive</button>
+        </div>
       </section>
       <section>
         <div class="section-title"><span>Clientes desde Google Sheets</span></div>
@@ -1350,7 +1357,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v84';
+const APP_VERSION = 'v85';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1382,7 +1389,7 @@ const RUTA_COLORS = ['#2F6F4E','#C97A2B','#3E6E88','#7A4E9E','#B3432B','#5B7075'
 const GOOGLE_CLIENT_ID = '818392124571-v6hu957tv3ps6gdvn5th4pf3366gbuhd.apps.googleusercontent.com';
 const SHEETS_SPREADSHEET_ID = '1EsRshQe_iLHt1Sp70ouYhxTBWtL-s10TztJPTJMTtks';
 const SHEETS_TAB_NAME = 'Clientes';
-const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.file';
 const PRIORITY_RANK = ['ESTRATEGICO','ALTA','MEDIA','BAJA','TELEFONO','INACTIVO','BLOQUEADO'];
 
 const PRIORITY_STYLES = {
@@ -1503,6 +1510,7 @@ function save(){
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
   localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
   localStorage.setItem(LS_CUSTOM_WEEK_COLORS, JSON.stringify(state.customWeekColors));
+  if(typeof scheduleDriveAutoBackup==='function') scheduleDriveAutoBackup();
 }
 
 function load(){
@@ -3337,6 +3345,8 @@ function importBackup(file){
 
 document.getElementById('exportBackupBtn').onclick = exportBackup;
 document.getElementById('importBackupBtn').onclick = ()=> document.getElementById('importBackupFile').click();
+document.getElementById('driveBackupBtn').onclick = manualDriveBackup;
+document.getElementById('driveRestoreBtn').onclick = restoreFromDrive;
 document.getElementById('importBackupFile').addEventListener('change', (e)=> importBackup(e.target.files[0]));
 
 function openListPicker(title, items, onPick){
@@ -3850,6 +3860,7 @@ function initGoogleTokenClient(){
         googleAccessToken = resp.access_token;
         updateSheetsStatusText('Conectado con Google. Ya puedes actualizar tus clientes.');
         toast('Conectado con Google');
+        scheduleDriveAutoBackup();
       } else {
         updateSheetsStatusText('No se pudo conectar con Google. Intenta de nuevo.');
       }
@@ -3857,6 +3868,34 @@ function initGoogleTokenClient(){
     }
   });
 }
+
+function attemptSilentGoogleReconnect(){
+  initGoogleTokenClient();
+  if(!googleTokenClient) return;
+  const originalCallback = googleTokenClient.callback;
+  // en el intento silencioso, si falla, no mostramos ningún error (solo queda desconectado)
+  googleTokenClient.callback = (resp)=>{
+    if(resp && resp.access_token){
+      googleAccessToken = resp.access_token;
+      updateSheetsStatusText('Conectado con Google. Ya puedes actualizar tus clientes.');
+      updateSheetsConnectBtnState();
+      scheduleDriveAutoBackup();
+    }
+    googleTokenClient.callback = originalCallback;
+  };
+  try{
+    googleTokenClient.requestAccessToken({ prompt: '' });
+  }catch(e){
+    googleTokenClient.callback = originalCallback;
+  }
+}
+
+let googleGisReadyCheckInterval = setInterval(()=>{
+  if(window.google && window.google.accounts){
+    clearInterval(googleGisReadyCheckInterval);
+    attemptSilentGoogleReconnect();
+  }
+}, 300);
 
 function updateSheetsStatusText(msg){
   const el = document.getElementById('sheetsStatusText');
@@ -3881,6 +3920,124 @@ document.getElementById('sheetsUpdateBtn').onclick = ()=>{
 };
 
 updateSheetsConnectBtnState();
+
+/* ---------- Respaldo automático en Google Drive ---------- */
+const DRIVE_BACKUP_FILENAME = 'planificador-cgs-respaldo.json';
+let driveAutoBackupTimer = null;
+
+function buildBackupObject(){
+  return {
+    app: 'Planificador CGS',
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    clientes: state.clientes,
+    meses: state.meses,
+    priorityOrder: state.priorityOrder,
+    priorityColors: state.priorityColors,
+    customWeekColors: state.customWeekColors
+  };
+}
+
+function driveFindBackupFile(){
+  const q = encodeURIComponent(`name='${DRIVE_BACKUP_FILENAME}' and trashed=false`);
+  return fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&spaces=drive`, {
+    headers: { 'Authorization': 'Bearer ' + googleAccessToken }
+  })
+    .then(res=>{
+      if(!res.ok) throw new Error('Error HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data=> (data.files && data.files[0]) ? data.files[0] : null);
+}
+
+function driveUploadBackup(){
+  if(!googleAccessToken) return Promise.reject(new Error('No conectado con Google'));
+  const content = JSON.stringify(buildBackupObject(), null, 2);
+  return driveFindBackupFile().then(existing=>{
+    if(existing){
+      return fetch(`https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=media`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': 'Bearer ' + googleAccessToken,
+          'Content-Type': 'application/json'
+        },
+        body: content
+      });
+    } else {
+      const metadata = { name: DRIVE_BACKUP_FILENAME, mimeType: 'application/json' };
+      const boundary = 'pcgsboundary';
+      const body =
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+        `--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
+      return fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + googleAccessToken,
+          'Content-Type': `multipart/related; boundary=${boundary}`
+        },
+        body
+      });
+    }
+  }).then(res=>{
+    if(!res.ok) throw new Error('Error HTTP ' + res.status);
+    return res.json();
+  });
+}
+
+function scheduleDriveAutoBackup(){
+  if(!googleAccessToken) return;
+  clearTimeout(driveAutoBackupTimer);
+  driveAutoBackupTimer = setTimeout(()=>{
+    driveUploadBackup()
+      .then(()=> updateSheetsStatusText('Respaldo automático guardado en Drive — ' + new Date().toLocaleString('es-GT')))
+      .catch(err=> console.error('Auto-respaldo a Drive falló:', err));
+  }, 3*60*1000);
+}
+
+function manualDriveBackup(){
+  if(!googleAccessToken){
+    toast('Primero toca "Conectar con Google".');
+    return;
+  }
+  toast('Respaldando en Drive…');
+  driveUploadBackup()
+    .then(()=>{
+      toast('Respaldo guardado en Drive');
+      updateSheetsStatusText('Respaldo guardado en Drive — ' + new Date().toLocaleString('es-GT'));
+    })
+    .catch(err=>{
+      console.error(err);
+      toast('No se pudo respaldar en Drive: ' + err.message);
+    });
+}
+
+function restoreFromDrive(){
+  if(!googleAccessToken){
+    toast('Primero toca "Conectar con Google".');
+    return;
+  }
+  toast('Buscando respaldo en Drive…');
+  driveFindBackupFile().then(existing=>{
+    if(!existing){
+      toast('No se encontró ningún respaldo en Drive todavía.');
+      return;
+    }
+    return fetch(`https://www.googleapis.com/drive/v3/files/${existing.id}?alt=media`, {
+      headers: { 'Authorization': 'Bearer ' + googleAccessToken }
+    })
+      .then(res=>{
+        if(!res.ok) throw new Error('Error HTTP ' + res.status);
+        return res.text();
+      })
+      .then(text=>{
+        if(!confirm(`Se encontró un respaldo en Drive (${new Date(existing.modifiedTime).toLocaleString('es-GT')}). Esto reemplazará TODOS los datos actuales de la app. ¿Continuar?`)) return;
+        restoreFromBackupJSON(text);
+      });
+  }).catch(err=>{
+    console.error(err);
+    toast('No se pudo leer el respaldo de Drive: ' + err.message);
+  });
+}
 
 function fetchClientsFromSheets(){
   updateSheetsStatusText('Descargando datos de la hoja…');
