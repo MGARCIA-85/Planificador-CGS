@@ -1329,22 +1329,18 @@
         </div>
       </section>
       <section class="backup-card backup-card-drive">
-        <div class="section-title"><span>☁️ Respaldo en Google Drive</span></div>
-        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
-          Con tu cuenta de Google conectada (abajo), la app también respalda tus datos solos en tu Drive después de cada cambio — o puedes forzarlo/restaurarlo aquí:
+        <div class="section-title"><span>☁️ Conexión con Google (respaldo y clientes)</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;" id="sheetsStatusText">
+          Conecta tu cuenta de Google para respaldar todos los datos de la app en tu Drive de forma automática, y para actualizar tu lista de clientes desde Google Sheets.
         </div>
-        <div class="filter-bar" style="overflow:visible;">
+        <div class="filter-bar" style="overflow:visible;margin-bottom:10px;">
+          <button class="filter-chip-btn" id="sheetsConnectBtn">🔗 Conectar con Google</button>
+        </div>
+        <div class="filter-bar" style="overflow:visible;margin-bottom:10px;">
           <button class="filter-chip-btn drive-btn" id="driveBackupBtn">☁️ Respaldar en Drive ahora</button>
           <button class="filter-chip-btn drive-btn" id="driveRestoreBtn">⬇️ Restaurar desde Drive</button>
         </div>
-      </section>
-      <section>
-        <div class="section-title"><span>Clientes desde Google Sheets</span></div>
-        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;" id="sheetsStatusText">
-          Actualiza tu lista de clientes directo desde tu hoja de Google Sheets, sin exportar/importar Excel.
-        </div>
         <div class="filter-bar" style="overflow:visible;">
-          <button class="filter-chip-btn" id="sheetsConnectBtn">🔗 Conectar con Google</button>
           <button class="filter-chip-btn" id="sheetsUpdateBtn">🔄 Actualizar clientes desde Sheets</button>
         </div>
       </section>
@@ -1442,7 +1438,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v89';
+const APP_VERSION = 'v90';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
