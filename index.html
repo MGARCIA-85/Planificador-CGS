@@ -1252,6 +1252,16 @@
           <input type="file" id="importBackupFile" accept=".json" style="display:none;">
         </div>
       </section>
+      <section>
+        <div class="section-title"><span>Clientes desde Google Sheets</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;" id="sheetsStatusText">
+          Actualiza tu lista de clientes directo desde tu hoja de Google Sheets, sin exportar/importar Excel.
+        </div>
+        <div class="filter-bar" style="overflow:visible;">
+          <button class="filter-chip-btn" id="sheetsConnectBtn">🔗 Conectar con Google</button>
+          <button class="filter-chip-btn" id="sheetsUpdateBtn">🔄 Actualizar clientes desde Sheets</button>
+        </div>
+      </section>
     </div>
   </div>
 </main>
@@ -1317,6 +1327,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
 /* =========================================================
@@ -1329,7 +1340,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v80';
+const APP_VERSION = 'v81';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1357,6 +1368,11 @@ const COLUMN_MAP = {
 };
 
 const RUTA_COLORS = ['#2F6F4E','#C97A2B','#3E6E88','#7A4E9E','#B3432B','#5B7075','#1F7A6C','#946B2D'];
+
+const GOOGLE_CLIENT_ID = '818392124571-v6hu957tv3ps6gdvn5th4pf3366gbuhd.apps.googleusercontent.com';
+const SHEETS_SPREADSHEET_ID = '13UXehtQ9yu6NDza2F88_ljA3tdck0XAX';
+const SHEETS_TAB_NAME = 'Clientes';
+const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const PRIORITY_RANK = ['ESTRATEGICO','ALTA','MEDIA','BAJA','TELEFONO','INACTIVO','BLOQUEADO'];
 
 const PRIORITY_STYLES = {
@@ -3795,6 +3811,104 @@ function handleFile(file){
 
 document.getElementById('fileInput').addEventListener('change', (e)=> handleFile(e.target.files[0]));
 document.getElementById('fileInput2').addEventListener('change', (e)=> handleFile(e.target.files[0]));
+
+/* ---------- Google Sheets (clientes) ---------- */
+let googleAccessToken = null;
+let googleTokenClient = null;
+
+function initGoogleTokenClient(){
+  if(!window.google || !window.google.accounts || googleTokenClient) return;
+  googleTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: SHEETS_SCOPE,
+    callback: (resp)=>{
+      if(resp && resp.access_token){
+        googleAccessToken = resp.access_token;
+        updateSheetsStatusText('Conectado con Google. Ya puedes actualizar tus clientes.');
+        toast('Conectado con Google');
+      } else {
+        updateSheetsStatusText('No se pudo conectar con Google. Intenta de nuevo.');
+      }
+    }
+  });
+}
+
+function updateSheetsStatusText(msg){
+  const el = document.getElementById('sheetsStatusText');
+  if(el) el.textContent = msg;
+}
+
+document.getElementById('sheetsConnectBtn').onclick = ()=>{
+  initGoogleTokenClient();
+  if(!googleTokenClient){
+    toast('Google aún no ha cargado, intenta de nuevo en un momento.');
+    return;
+  }
+  googleTokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
+};
+
+document.getElementById('sheetsUpdateBtn').onclick = ()=>{
+  if(!googleAccessToken){
+    toast('Primero toca "Conectar con Google".');
+    return;
+  }
+  fetchClientsFromSheets();
+};
+
+function fetchClientsFromSheets(){
+  updateSheetsStatusText('Descargando datos de la hoja…');
+  const range = encodeURIComponent(SHEETS_TAB_NAME);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_SPREADSHEET_ID}/values/${range}`;
+  fetch(url, { headers: { 'Authorization': 'Bearer ' + googleAccessToken } })
+    .then(res=>{
+      if(res.status===401){
+        googleAccessToken = null;
+        updateSheetsStatusText('Tu conexión con Google expiró. Vuelve a tocar "Conectar con Google".');
+        throw new Error('token expirado');
+      }
+      if(!res.ok) throw new Error('Error HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data=>{
+      const rows = data.values || [];
+      if(rows.length<2){
+        toast('La hoja no tiene datos de clientes.');
+        updateSheetsStatusText('La hoja parece estar vacía.');
+        return;
+      }
+      const headers = rows[0].map(h=> String(h||'').toLowerCase().trim());
+      const clientes = rows.slice(1).map(row=>{
+        const obj = {};
+        headers.forEach((h,i)=>{
+          const field = COLUMN_MAP[h];
+          if(field) obj[field] = String(row[i]===undefined ? '' : row[i]).trim();
+        });
+        return obj;
+      }).filter(c=> c.nombre);
+
+      if(clientes.length===0){
+        toast('No se encontraron clientes válidos en la hoja.');
+        updateSheetsStatusText('No se encontraron clientes válidos — revisa los encabezados de la hoja.');
+        return;
+      }
+
+      if(!confirm(`Se encontraron ${clientes.length} clientes en la hoja. Esto reemplazará tu lista de clientes actual. ¿Continuar?`)) return;
+
+      state.clientes = clientes;
+      save();
+      renderClientesView();
+      renderTickets();
+      toast(clientes.length + ' clientes actualizados desde Sheets');
+      updateSheetsStatusText(`Última actualización: ${clientes.length} clientes, ${new Date().toLocaleString('es-GT')}.`);
+    })
+    .catch(err=>{
+      console.error(err);
+      if(err.message!=='token expirado'){
+        toast('No se pudo leer la hoja. Verifica la conexión o los permisos.');
+      }
+    });
+}
+
 document.getElementById('searchInput').addEventListener('input', renderClientesView);
 document.getElementById('groupSelect').addEventListener('change', (e)=>{
   state.groupMode = e.target.value;
