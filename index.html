@@ -299,6 +299,72 @@
     color:var(--ink);
     font-weight:600;
   }
+  .backup-card{
+    border-radius:var(--radius);
+    padding:12px;
+    margin-bottom:12px;
+  }
+  .backup-card-local{
+    background:#F4F7F6;
+    border:1px solid var(--line);
+  }
+  .backup-card-drive{
+    background:#EAF2FE;
+    border:1px solid #B9D4F5;
+  }
+  .filter-chip-btn.drive-btn{
+    background:#3E6E9E;
+    border-color:#3E6E9E;
+    color:#fff;
+  }
+  .drive-found-overlay{
+    background:rgba(0,0,0,0.65);
+  }
+  .drive-found-card{
+    background:#161B2E;
+    border:1px solid #E05252;
+    border-radius:16px;
+    padding:28px 20px;
+    max-width:320px;
+    width:100%;
+    text-align:center;
+  }
+  .drive-found-icon{font-size:36px;margin-bottom:8px;}
+  .drive-found-title{
+    color:#fff;
+    font-size:19px;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .drive-found-subtitle{
+    color:#9AA3B8;
+    font-size:13.5px;
+    line-height:1.5;
+    margin-bottom:20px;
+  }
+  .drive-found-actions{
+    display:flex;
+    gap:10px;
+  }
+  .drive-found-btn{
+    flex:1;
+    border-radius:10px;
+    padding:14px 8px;
+    font-size:14px;
+    font-weight:700;
+    line-height:1.4;
+  }
+  .drive-found-small{font-size:11px;font-weight:500;}
+  .drive-found-no{
+    background:none;
+    border:1px solid #3A4257;
+    color:#fff;
+  }
+  .drive-found-yes{
+    background:#3FBF7F;
+    border:none;
+    color:#fff;
+  }
   .filter-chip-btn.gsheets-connected{
     background:#22C55E;
     border-color:#22C55E;
@@ -1251,8 +1317,8 @@
 
     <div id="configSubRespaldo" style="display:none;">
       <button class="btn-mini config-back-btn" id="configBackRespaldoBtn">← Volver</button>
-      <section>
-        <div class="section-title"><span>Respaldo</span></div>
+      <section class="backup-card backup-card-local">
+        <div class="section-title"><span>💾 Respaldo local (archivo)</span></div>
         <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
           Descarga un archivo con todos tus datos (clientes, meses, semanas, visitas asignadas) para llevarlo a otro dispositivo, o para tener un respaldo por seguridad.
         </div>
@@ -1261,12 +1327,15 @@
           <button class="filter-chip-btn" id="importBackupBtn">⬆ Importar respaldo</button>
           <input type="file" id="importBackupFile" accept=".json" style="display:none;">
         </div>
-        <div style="font-size:11.5px;color:var(--muted);margin:12px 0 8px;">
+      </section>
+      <section class="backup-card backup-card-drive">
+        <div class="section-title"><span>☁️ Respaldo en Google Drive</span></div>
+        <div style="font-size:11.5px;color:var(--muted);margin:-4px 0 8px;">
           Con tu cuenta de Google conectada (abajo), la app también respalda tus datos solos en tu Drive después de cada cambio — o puedes forzarlo/restaurarlo aquí:
         </div>
         <div class="filter-bar" style="overflow:visible;">
-          <button class="filter-chip-btn" id="driveBackupBtn">☁️ Respaldar en Drive ahora</button>
-          <button class="filter-chip-btn" id="driveRestoreBtn">⬇️ Restaurar desde Drive</button>
+          <button class="filter-chip-btn drive-btn" id="driveBackupBtn">☁️ Respaldar en Drive ahora</button>
+          <button class="filter-chip-btn drive-btn" id="driveRestoreBtn">⬇️ Restaurar desde Drive</button>
         </div>
       </section>
       <section>
@@ -1343,6 +1412,22 @@
   </div>
 </div>
 
+<div class="rename-dialog-overlay drive-found-overlay" id="driveFoundOverlay" style="display:none;">
+  <div class="drive-found-card">
+    <div class="drive-found-icon">☁️</div>
+    <div class="drive-found-title">Drive conectado</div>
+    <div class="drive-found-subtitle">Se encontró un respaldo existente en Drive.<br>¿Deseas importar esos datos?</div>
+    <div class="drive-found-actions">
+      <button class="drive-found-btn drive-found-no" id="driveFoundNoBtn">
+        No importar<br><span class="drive-found-small">(Mantener datos actuales)</span>
+      </button>
+      <button class="drive-found-btn drive-found-yes" id="driveFoundYesBtn">
+        📥 Importar<br><span class="drive-found-small">(Importar backup de Drive)</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
@@ -1357,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v87';
+const APP_VERSION = 'v89';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1425,6 +1510,15 @@ let state = {
   priorityColors: null,
   customWeekColors: []
 };
+
+function selectCurrentRealMonth(){
+  const now = new Date();
+  const todayMonth = now.getMonth()+1;
+  const todayYear = now.getFullYear();
+  const weeks = currentMonth().weeks;
+  const found = weeks.find(w => w.calendarMonth && w.calendarMonth.month===todayMonth && w.calendarMonth.year===todayYear);
+  state.currentWeekIndex = found ? weeks.indexOf(found) : 0;
+}
 
 function todayMonthKey(){
   const d = new Date();
@@ -3324,7 +3418,7 @@ function restoreFromBackupJSON(jsonText){
   migrateOldData();
   state.currentMonthKey = todayMonthKey();
   ensureMonth(state.currentMonthKey);
-  state.currentWeekIndex = 0;
+  selectCurrentRealMonth();
   save();
   renderHeader();
   renderWeekStrip();
@@ -3860,13 +3954,50 @@ function initGoogleTokenClient(){
         googleAccessToken = resp.access_token;
         updateSheetsStatusText('Conectado con Google. Ya puedes actualizar tus clientes.');
         toast('Conectado con Google');
-        scheduleDriveAutoBackup();
+        checkDriveBackupOnConnect();
       } else {
         updateSheetsStatusText('No se pudo conectar con Google. Intenta de nuevo.');
       }
       updateSheetsConnectBtnState();
     }
   });
+}
+
+function checkDriveBackupOnConnect(){
+  driveFindBackupFile().then(existing=>{
+    if(existing){
+      openDriveFoundDialog(existing.id);
+    } else {
+      scheduleDriveAutoBackup();
+    }
+  }).catch(err=>{
+    console.error('No se pudo revisar respaldo en Drive:', err);
+    scheduleDriveAutoBackup();
+  });
+}
+
+function openDriveFoundDialog(fileId){
+  const overlay = document.getElementById('driveFoundOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('driveFoundNoBtn').onclick = ()=>{
+    overlay.style.display = 'none';
+    scheduleDriveAutoBackup();
+  };
+  document.getElementById('driveFoundYesBtn').onclick = ()=>{
+    overlay.style.display = 'none';
+    fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+      headers: { 'Authorization': 'Bearer ' + googleAccessToken }
+    })
+      .then(res=>{
+        if(!res.ok) throw new Error('Error HTTP ' + res.status);
+        return res.text();
+      })
+      .then(text=> restoreFromBackupJSON(text))
+      .catch(err=>{
+        console.error(err);
+        toast('No se pudo importar el respaldo de Drive: ' + err.message);
+      });
+  };
 }
 
 function updateSheetsStatusText(msg){
@@ -4086,14 +4217,7 @@ document.getElementById('sortSelect').addEventListener('change', (e)=>{
 
 /* ---------- init ---------- */
 load();
-(function selectCurrentRealMonthOnLoad(){
-  const now = new Date();
-  const todayMonth = now.getMonth()+1;
-  const todayYear = now.getFullYear();
-  const weeks = currentMonth().weeks;
-  const found = weeks.find(w => w.calendarMonth && w.calendarMonth.month===todayMonth && w.calendarMonth.year===todayYear);
-  if(found) state.currentWeekIndex = weeks.indexOf(found);
-})();
+selectCurrentRealMonth();
 renderHeader();
 renderWeekStrip();
 renderClientesView();
