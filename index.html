@@ -1350,7 +1350,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v82';
+const APP_VERSION = 'v83';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3894,7 +3894,13 @@ function fetchClientsFromSheets(){
         updateSheetsConnectBtnState();
         throw new Error('token expirado');
       }
-      if(!res.ok) throw new Error('Error HTTP ' + res.status);
+      if(!res.ok){
+        return res.text().then(bodyText=>{
+          let detail = bodyText;
+          try{ detail = JSON.parse(bodyText).error.message; }catch(e){}
+          throw new Error(`Error HTTP ${res.status}: ${detail}`);
+        });
+      }
       return res.json();
     })
     .then(data=>{
@@ -3932,7 +3938,8 @@ function fetchClientsFromSheets(){
     .catch(err=>{
       console.error(err);
       if(err.message!=='token expirado'){
-        toast('No se pudo leer la hoja. Verifica la conexión o los permisos.');
+        toast('Error: ' + err.message);
+        updateSheetsStatusText('Error: ' + err.message);
       }
     });
 }
