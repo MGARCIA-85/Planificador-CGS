@@ -1357,7 +1357,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v85';
+const APP_VERSION = 'v87';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3869,34 +3869,6 @@ function initGoogleTokenClient(){
   });
 }
 
-function attemptSilentGoogleReconnect(){
-  initGoogleTokenClient();
-  if(!googleTokenClient) return;
-  const originalCallback = googleTokenClient.callback;
-  // en el intento silencioso, si falla, no mostramos ningún error (solo queda desconectado)
-  googleTokenClient.callback = (resp)=>{
-    if(resp && resp.access_token){
-      googleAccessToken = resp.access_token;
-      updateSheetsStatusText('Conectado con Google. Ya puedes actualizar tus clientes.');
-      updateSheetsConnectBtnState();
-      scheduleDriveAutoBackup();
-    }
-    googleTokenClient.callback = originalCallback;
-  };
-  try{
-    googleTokenClient.requestAccessToken({ prompt: '' });
-  }catch(e){
-    googleTokenClient.callback = originalCallback;
-  }
-}
-
-let googleGisReadyCheckInterval = setInterval(()=>{
-  if(window.google && window.google.accounts){
-    clearInterval(googleGisReadyCheckInterval);
-    attemptSilentGoogleReconnect();
-  }
-}, 300);
-
 function updateSheetsStatusText(msg){
   const el = document.getElementById('sheetsStatusText');
   if(el) el.textContent = msg;
@@ -3991,7 +3963,7 @@ function scheduleDriveAutoBackup(){
     driveUploadBackup()
       .then(()=> updateSheetsStatusText('Respaldo automático guardado en Drive — ' + new Date().toLocaleString('es-GT')))
       .catch(err=> console.error('Auto-respaldo a Drive falló:', err));
-  }, 3*60*1000);
+  }, 5*1000);
 }
 
 function manualDriveBackup(){
