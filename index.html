@@ -183,6 +183,7 @@
     font-size:15px;
     padding:2px 4px;
   }
+  .week-pill .delete-week{font-size:19px;}
   .week-pill .delete-week{
     color:var(--danger);
     font-size:12px;
@@ -591,9 +592,6 @@
     overflow:hidden;
     position:relative;
   }
-  .week-title-strip.reorder-active{
-    min-height:190px;
-  }
   .week-title-strip-inner{
     display:flex;
     align-items:center;
@@ -630,11 +628,19 @@
   .week-color-btn{
     position:absolute;
     bottom:6px;
-    left:50%;
-    transform:translateX(-50%);
+    left:6px;
     font-size:17px;
     opacity:0.85;
     z-index:1;
+  }
+  .week-title-strip .week-drag-handle{
+    position:absolute;
+    bottom:6px;
+    right:6px;
+    font-size:17px;
+    opacity:0.85;
+    z-index:1;
+    margin-right:0;
   }
   .week-cal-btn.set{
     background:#22C55E;
@@ -763,7 +769,7 @@
     background:none;border:none;color:var(--muted);
     font-size:18px;padding:3px 6px;
   }
-  .day-actions button.trash{color:var(--danger);}
+  .day-actions button.trash{color:var(--danger);font-size:21px;}
   .day-actions button.pending-swap{
     background:#22C55E;
     border-radius:50%;
@@ -1442,7 +1448,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v91';
+const APP_VERSION = 'v92';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -2627,16 +2633,16 @@ function renderTickets(){
       const titulo = week.semanaTitulos[groupIndex] || '';
       const fechaSemana = week.semanaFechas[groupIndex] || null;
       const titleStrip = document.createElement('div');
-      titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset') + (reorderModeActive ? ' reorder-active' : '');
+      titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset');
       const semanaColor = week.semanaColors[groupIndex] || null;
       if(semanaColor) titleStrip.style.background = semanaColor;
       titleStrip.innerHTML = `
         ${week.calendarMonth ? `<span class="week-cal-btn${fechaSemana?' set':''}" title="Elegir semana real del mes">📅</span>` : ''}
         ${reorderModeActive ? `<span class="week-copy-btn" title="Copiar esta semana a otro mes">⧉</span>` : ''}
         <span class="week-color-btn" title="Color de esta semana">🎨</span>
+        ${reorderModeActive ? `<span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">☰</span>` : ''}
         <span class="week-title-strip-inner">
           <span class="week-title-text">${titulo || '+ Título'}</span>
-          ${reorderModeActive ? `<span class="drag-handle week-drag-handle" title="Arrastrar para reordenar semana">☰</span>` : ''}
         </span>
       `;
       titleStrip.querySelector('.week-color-btn').onclick = (e)=>{
