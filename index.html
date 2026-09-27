@@ -1201,6 +1201,7 @@
           <option value="ruta">Agrupar por: Ruta</option>
           <option value="departamento">Agrupar por: Departamento</option>
           <option value="municipio">Agrupar por: Sector</option>
+          <option value="prioridad">Agrupar por: Prioridad</option>
         </select>
         <select id="sortSelect">
           <option value="nombre">Orden: Nombre A-Z</option>
@@ -1441,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v94';
+const APP_VERSION = 'v95';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1964,16 +1965,47 @@ function renderWeekStrip(){
     pillsList.appendChild(pill);
   });
 
-  /* Botón único para navegar entre los meses con fecha real */
+  /* 3 pestañas fijas: mes anterior, vigente y siguiente (relativas a hoy real) */
   const now = new Date();
   const todayCM = { month: now.getMonth()+1, year: now.getFullYear() };
-  const activeIsReal = activeWeekObj && activeWeekObj.calendarMonth;
-  const todayIsActive = activeIsReal && activeWeekObj.calendarMonth.month===todayCM.month && activeWeekObj.calendarMonth.year===todayCM.year;
-  const otherRealActive = activeIsReal && !todayIsActive;
+  let prevMonth = todayCM.month - 1, prevYear = todayCM.year;
+  if(prevMonth < 1){ prevMonth = 12; prevYear -= 1; }
+  const prevCM = { month: prevMonth, year: prevYear };
+  let nextMonth = todayCM.month + 1, nextYear = todayCM.year;
+  if(nextMonth > 12){ nextMonth = 1; nextYear += 1; }
+  const nextCM = { month: nextMonth, year: nextYear };
 
-  const realBtn = document.createElement('button');
-  realBtn.className = 'week-pill real-month-btn' + (todayIsActive ? ' active':'');
-  realBtn.innerHTML = `<span class="real-month-label">📅 ${formatCalendarMonth(todayCM).toUpperCase()}</span>`;
+  function findWeekForCM(cm){
+    return weeks.find(w=> w.calendarMonth && w.calendarMonth.month===cm.month && w.calendarMonth.year===cm.year);
+  }
+
+  function buildFixedMonthTab(cm, prefix, extraClass){
+    const found = findWeekForCM(cm);
+    const isActive = found && activeWeekObj===found;
+    const btn = document.createElement('button');
+    btn.className = 'week-pill real-month-btn' + extraClass + (isActive ? ' active':'');
+    btn.innerHTML = `<span class="real-month-label">${prefix} ${formatCalendarMonth(cm).toUpperCase()}</span>`;
+    btn.onclick = (e)=>{
+      if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
+      if(found){
+        state.currentWeekIndex = weeks.indexOf(found);
+        closeSlotPicker();
+        renderWeekStrip();
+        renderTickets();
+        renderCalendarView();
+      } else {
+        toast(`Aún no has creado ${formatCalendarMonth(cm)}. Usa "+ Mes" para crearlo.`);
+      }
+    };
+    return { btn, found, isActive };
+  }
+
+  const prevTab = buildFixedMonthTab(prevCM, '◀', ' prev-month-btn');
+  const todayTab = buildFixedMonthTab(todayCM, '📅', '');
+  const nextTab = buildFixedMonthTab(nextCM, '▶', ' next-month-btn');
+
+  const activeIsReal = activeWeekObj && activeWeekObj.calendarMonth;
+  const otherRealActive = activeIsReal && !prevTab.isActive && !todayTab.isActive && !nextTab.isActive;
 
   const searchMonthBtn = document.createElement('button');
   searchMonthBtn.className = 'week-pill search-month-btn' + (otherRealActive ? ' active':'');
@@ -1981,7 +2013,8 @@ function renderWeekStrip(){
     ? `<span class="real-month-label">🔍 ${formatCalendarMonth(activeWeekObj.calendarMonth).toUpperCase()}</span>`
     : '🔍 Buscar mes';
 
-  const activeRealBtn = todayIsActive ? realBtn : (otherRealActive ? searchMonthBtn : null);
+  const activeTab = prevTab.isActive ? prevTab : (todayTab.isActive ? todayTab : (nextTab.isActive ? nextTab : null));
+  const activeRealBtn = activeTab ? activeTab.btn : (otherRealActive ? searchMonthBtn : null);
   if(activeRealBtn){
     const idx = weeks.indexOf(activeWeekObj);
     const pencil2 = document.createElement('span');
@@ -2019,20 +2052,9 @@ function renderWeekStrip(){
     activeRealBtn.appendChild(del2);
   }
 
-  realBtn.onclick = (e)=>{
-    if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
-    const found = weeks.find(w=> w.calendarMonth && w.calendarMonth.month===todayCM.month && w.calendarMonth.year===todayCM.year);
-    if(found){
-      state.currentWeekIndex = weeks.indexOf(found);
-      closeSlotPicker();
-      renderWeekStrip();
-      renderTickets();
-      renderCalendarView();
-    } else {
-      toast(`Aún no has creado ${formatCalendarMonth(todayCM)}. Usa "+ Mes" para crearlo.`);
-    }
-  };
-  pillsList.appendChild(realBtn);
+  pillsList.appendChild(prevTab.btn);
+  pillsList.appendChild(todayTab.btn);
+  pillsList.appendChild(nextTab.btn);
 
   searchMonthBtn.onclick = (e)=>{
     if(e.target.closest('.edit-pencil, .duplicate-week, .delete-week')) return;
@@ -2113,17 +2135,31 @@ function clientById(id){
   return state.clientes.find(c => (c.idCliente||c.idSistema) === id);
 }
 
-const GROUP_FIELDS = { ruta:'ruta', departamento:'departamento', municipio:'sector' };
+const GROUP_FIELDS = { ruta:'ruta', departamento:'departamento', municipio:'sector', prioridad:'prioridad' };
 
 function groupClients(list){
   const field = GROUP_FIELDS[state.groupMode] || 'ruta';
   const groups = {};
   list.forEach(c=>{
-    const key = c[field] || 'Sin dato';
+    let key;
+    if(field==='prioridad'){
+      const norm = normalizePriority(c.prioridad);
+      key = PRIORITY_LABELS[norm] || 'Sin dato';
+    } else {
+      key = c[field] || 'Sin dato';
+    }
     if(!groups[key]) groups[key] = [];
     groups[key].push(c);
   });
   return groups;
+}
+
+function groupHeaderColor(key){
+  if(state.groupMode==='prioridad'){
+    const normKey = Object.keys(PRIORITY_LABELS).find(k=> PRIORITY_LABELS[k]===key);
+    return (normKey && state.priorityColors[normKey]) || '#5B7075';
+  }
+  return rutaColor(key);
 }
 
 function assignedClientIdsThisWeek(){
@@ -2443,7 +2479,13 @@ function renderClientGroupList(opts){
   }
 
   const groups = groupClients(filtered);
-  const keys = Object.keys(groups).sort();
+  let keys;
+  if(state.groupMode==='prioridad'){
+    const orderedLabels = state.priorityOrder.map(k=>PRIORITY_LABELS[k]);
+    keys = Object.keys(groups).sort((a,b)=> orderedLabels.indexOf(a) - orderedLabels.indexOf(b));
+  } else {
+    keys = Object.keys(groups).sort();
+  }
   if(keys.length===0){
     wrap.innerHTML = `<div class="empty-state">${opts.emptyMsg || 'No hay clientes disponibles.'}</div>`;
     return;
@@ -2458,7 +2500,7 @@ function renderClientGroupList(opts){
     const head = document.createElement('div');
     head.className = 'ruta-head';
     head.innerHTML = `
-      <span class="name"><span class="ruta-chip" style="background:${rutaColor(key)}"></span>${key}
+      <span class="name"><span class="ruta-chip" style="background:${groupHeaderColor(key)}"></span>${key}
         <span class="count">(${clients.length})</span>
       </span>
       <span class="icon-btn">${isOpen ? '▾' : '▸'}</span>
