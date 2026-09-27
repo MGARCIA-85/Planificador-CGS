@@ -611,16 +611,18 @@
   }
   .week-cal-btn{
     position:absolute;
-    top:9px;
-    right:6px;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
     font-size:17px;
     opacity:0.85;
     z-index:1;
   }
   .week-copy-btn{
     position:absolute;
-    top:9px;
-    left:6px;
+    top:36px;
+    left:50%;
+    transform:translateX(-50%);
     font-size:17px;
     opacity:0.85;
     z-index:1;
@@ -1448,7 +1450,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v92';
+const APP_VERSION = 'v93';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
