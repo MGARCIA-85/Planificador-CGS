@@ -141,6 +141,7 @@
     cursor:grab;
     margin-right:4px;
     opacity:0.9;
+    font-size:16px;
   }
   .drag-handle:active{cursor:grabbing;}
   .client-drag-handle.mark-gray{
@@ -590,6 +591,9 @@
     overflow:hidden;
     position:relative;
   }
+  .week-title-strip.reorder-active{
+    min-height:190px;
+  }
   .week-title-strip-inner{
     display:flex;
     align-items:center;
@@ -611,16 +615,16 @@
     position:absolute;
     top:9px;
     right:6px;
-    font-size:12px;
-    opacity:0.8;
+    font-size:17px;
+    opacity:0.85;
     z-index:1;
   }
   .week-copy-btn{
     position:absolute;
     top:9px;
     left:6px;
-    font-size:12px;
-    opacity:0.8;
+    font-size:17px;
+    opacity:0.85;
     z-index:1;
   }
   .week-color-btn{
@@ -628,8 +632,8 @@
     bottom:6px;
     left:50%;
     transform:translateX(-50%);
-    font-size:12px;
-    opacity:0.8;
+    font-size:17px;
+    opacity:0.85;
     z-index:1;
   }
   .week-cal-btn.set{
@@ -757,7 +761,7 @@
   .day-actions{display:flex;gap:0;flex:0 0 auto;}
   .day-actions button{
     background:none;border:none;color:var(--muted);
-    font-size:12.5px;padding:3px 5px;
+    font-size:18px;padding:3px 6px;
   }
   .day-actions button.trash{color:var(--danger);}
   .day-actions button.pending-swap{
@@ -1102,7 +1106,7 @@
     align-items:center;
     gap:3px;
   }
-  nav.tabbar button.active{color:var(--accent);font-weight:700;}
+  nav.tabbar button.active{color:var(--accent);font-weight:700;font-size:22px;}
   nav.tabbar .dot{width:6px;height:6px;border-radius:50%;background:transparent;}
   nav.tabbar button.active .dot{background:var(--accent);}
 
@@ -1438,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v90';
+const APP_VERSION = 'v91';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -2623,7 +2627,7 @@ function renderTickets(){
       const titulo = week.semanaTitulos[groupIndex] || '';
       const fechaSemana = week.semanaFechas[groupIndex] || null;
       const titleStrip = document.createElement('div');
-      titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset');
+      titleStrip.className = 'week-title-strip' + (titulo ? '' : ' unset') + (reorderModeActive ? ' reorder-active' : '');
       const semanaColor = week.semanaColors[groupIndex] || null;
       if(semanaColor) titleStrip.style.background = semanaColor;
       titleStrip.innerHTML = `
