@@ -1442,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v95';
+const APP_VERSION = 'v96';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1523,6 +1523,15 @@ function selectCurrentRealMonth(){
 function todayMonthKey(){
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function resolveCurrentMonthKey(){
+  const existingKeys = Object.keys(state.meses);
+  if(existingKeys.length > 0){
+    if(state.currentMonthKey && state.meses[state.currentMonthKey]) return state.currentMonthKey;
+    return existingKeys[0];
+  }
+  return todayMonthKey();
 }
 
 const MESES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1626,7 +1635,7 @@ function load(){
     state.customWeekColors = Array.isArray(storedCustom) ? storedCustom : [];
   }catch(e){ state.customWeekColors = []; }
   migrateOldData();
-  state.currentMonthKey = todayMonthKey();
+  state.currentMonthKey = resolveCurrentMonthKey();
   ensureMonth(state.currentMonthKey);
 }
 
@@ -3457,7 +3466,7 @@ function restoreFromBackupJSON(jsonText){
     ? Object.assign(defaultPriorityColors(), data.priorityColors) : defaultPriorityColors();
   state.customWeekColors = Array.isArray(data.customWeekColors) ? data.customWeekColors : [];
   migrateOldData();
-  state.currentMonthKey = todayMonthKey();
+  state.currentMonthKey = resolveCurrentMonthKey();
   ensureMonth(state.currentMonthKey);
   selectCurrentRealMonth();
   save();
