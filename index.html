@@ -1442,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v96';
+const APP_VERSION = 'v97';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3635,6 +3635,12 @@ function copySemanaToAnotherMonth(sourceWeek, sourceGroupIndex){
   });
 }
 
+const DEFAULT_WEEK_COLOR_PRESETS = [
+  '#E8A79A', '#F6C945', '#8FD19E', '#6FA8DC',
+  '#B19CD9', '#F2A9CE', '#F4A261', '#90CAF9',
+  '#A5D6A7', '#CE93D8'
+];
+
 function openWeekColorPicker(currentColor, onPick){
   const overlay = document.getElementById('weekColorOverlay');
   const grid = document.getElementById('weekColorSwatches');
@@ -3642,7 +3648,7 @@ function openWeekColorPicker(currentColor, onPick){
 
   const close = ()=>{ overlay.style.display = 'none'; };
 
-  state.customWeekColors.forEach(hex=>{
+  function addSwatch(hex){
     const sw = document.createElement('button');
     sw.className = 'color-swatch-btn' + (currentColor===hex ? ' selected' : '');
     sw.style.background = hex;
@@ -3651,6 +3657,11 @@ function openWeekColorPicker(currentColor, onPick){
       onPick(hex);
     };
     grid.appendChild(sw);
+  }
+
+  state.customWeekColors.forEach(addSwatch);
+  DEFAULT_WEEK_COLOR_PRESETS.forEach(hex=>{
+    if(!state.customWeekColors.includes(hex)) addSwatch(hex);
   });
 
   const addSw = document.createElement('button');
@@ -3666,7 +3677,7 @@ function openWeekColorPicker(currentColor, onPick){
   grid.appendChild(nativeInput);
 
   addSw.onclick = ()=> nativeInput.click();
-  nativeInput.oninput = ()=>{
+  nativeInput.onchange = ()=>{
     const hex = nativeInput.value;
     let palette = state.customWeekColors.filter(c=> c!==hex);
     palette.unshift(hex);
