@@ -457,62 +457,6 @@
     color:var(--muted);
     border-style:dashed;
   }
-  .color-section-label{
-    font-size:11.5px;
-    font-weight:700;
-    color:var(--muted);
-    margin:6px 0 8px;
-  }
-  .color-slots-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:12px;
-  }
-  .color-slot-wrap{
-    position:relative;
-  }
-  .color-swatch-btn.empty-slot{
-    background:var(--surface);
-    border-style:dashed;
-    color:var(--muted);
-    font-size:20px;
-  }
-  .color-slot-edit{
-    position:absolute;
-    top:-6px;
-    right:-6px;
-    width:20px;
-    height:20px;
-    border-radius:50%;
-    background:var(--ink);
-    color:#fff;
-    font-size:11px;
-    line-height:1;
-    border:none;
-  }
-  .color-mixer-label{
-    font-size:12.5px;
-    color:var(--muted);
-    margin-bottom:10px;
-  }
-  .color-mixer-row{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-bottom:14px;
-  }
-  .color-mixer-preview{
-    width:60px;
-    height:60px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    flex:0 0 auto;
-  }
-  .color-mixer-input{
-    flex:1;
-    height:48px;
-  }
   .week-of-month-option{
     padding:10px 12px;
     border:1px solid var(--line);
@@ -1498,7 +1442,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v98';
+const APP_VERSION = 'v97';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3704,101 +3648,7 @@ function openWeekColorPicker(currentColor, onPick){
 
   const close = ()=>{ overlay.style.display = 'none'; };
 
-  while(state.customWeekColors.length < 4) state.customWeekColors.push(null);
-  if(state.customWeekColors.length > 4) state.customWeekColors = state.customWeekColors.slice(0,4);
-
-  const slotsLabel = document.createElement('div');
-  slotsLabel.className = 'color-section-label';
-  slotsLabel.textContent = 'Tus 4 colores guardados';
-  grid.appendChild(slotsLabel);
-
-  const slotsRow = document.createElement('div');
-  slotsRow.className = 'color-slots-row';
-  grid.appendChild(slotsRow);
-
-  const presetsLabel = document.createElement('div');
-  presetsLabel.className = 'color-section-label';
-  presetsLabel.textContent = 'Colores predefinidos';
-  grid.appendChild(presetsLabel);
-
-  const presetsRow = document.createElement('div');
-  presetsRow.className = 'color-slots-row';
-  grid.appendChild(presetsRow);
-
-  const mixerWrap = document.createElement('div');
-  mixerWrap.className = 'color-mixer-wrap';
-  mixerWrap.style.display = 'none';
-  mixerWrap.innerHTML = `
-    <div class="color-mixer-label">Ajusta el color y toca Aceptar</div>
-    <div class="color-mixer-row">
-      <div class="color-mixer-preview" id="colorMixerPreview"></div>
-      <input type="color" class="color-mixer-input" id="colorMixerInput">
-    </div>
-    <div class="rename-dialog-actions">
-      <button class="btn-mini" id="colorMixerCancelBtn">Cancelar</button>
-      <button id="colorMixerAcceptBtn">✓ Aceptar</button>
-    </div>
-  `;
-  grid.appendChild(mixerWrap);
-  const mixerPreview = mixerWrap.querySelector('#colorMixerPreview');
-  const mixerInput = mixerWrap.querySelector('#colorMixerInput');
-
-  function showMixer(){
-    slotsLabel.style.display = 'none';
-    slotsRow.style.display = 'none';
-    presetsLabel.style.display = 'none';
-    presetsRow.style.display = 'none';
-    mixerWrap.style.display = 'block';
-  }
-  function hideMixer(){
-    mixerWrap.style.display = 'none';
-    slotsLabel.style.display = '';
-    slotsRow.style.display = '';
-    presetsLabel.style.display = '';
-    presetsRow.style.display = '';
-  }
-
-  function openMixerForSlot(slotIdx){
-    showMixer();
-    const startColor = state.customWeekColors[slotIdx] || currentColor || '#E8A79A';
-    mixerInput.value = startColor;
-    mixerPreview.style.background = startColor;
-    mixerInput.oninput = ()=>{ mixerPreview.style.background = mixerInput.value; };
-    document.getElementById('colorMixerCancelBtn').onclick = hideMixer;
-    document.getElementById('colorMixerAcceptBtn').onclick = ()=>{
-      const hex = mixerInput.value;
-      state.customWeekColors[slotIdx] = hex;
-      save();
-      close();
-      onPick(hex);
-    };
-  }
-
-  state.customWeekColors.forEach((hex, idx)=>{
-    const wrap = document.createElement('div');
-    wrap.className = 'color-slot-wrap';
-    const sw = document.createElement('button');
-    sw.className = 'color-swatch-btn' + (hex && currentColor===hex ? ' selected' : '') + (!hex ? ' empty-slot' : '');
-    if(hex) sw.style.background = hex;
-    else sw.textContent = '+';
-    sw.title = hex ? `Usar este color (casilla ${idx+1})` : `Agregar color en la casilla ${idx+1}`;
-    sw.onclick = ()=>{
-      if(hex){ close(); onPick(hex); }
-      else openMixerForSlot(idx);
-    };
-    wrap.appendChild(sw);
-    if(hex){
-      const editBtn = document.createElement('button');
-      editBtn.className = 'color-slot-edit';
-      editBtn.textContent = '✎';
-      editBtn.title = 'Editar esta casilla';
-      editBtn.onclick = (e)=>{ e.stopPropagation(); openMixerForSlot(idx); };
-      wrap.appendChild(editBtn);
-    }
-    slotsRow.appendChild(wrap);
-  });
-
-  DEFAULT_WEEK_COLOR_PRESETS.forEach(hex=>{
+  function addSwatch(hex){
     const sw = document.createElement('button');
     sw.className = 'color-swatch-btn' + (currentColor===hex ? ' selected' : '');
     sw.style.background = hex;
@@ -3806,8 +3656,37 @@ function openWeekColorPicker(currentColor, onPick){
       close();
       onPick(hex);
     };
-    presetsRow.appendChild(sw);
+    grid.appendChild(sw);
+  }
+
+  state.customWeekColors.forEach(addSwatch);
+  DEFAULT_WEEK_COLOR_PRESETS.forEach(hex=>{
+    if(!state.customWeekColors.includes(hex)) addSwatch(hex);
   });
+
+  const addSw = document.createElement('button');
+  addSw.className = 'color-swatch-btn color-swatch-add';
+  addSw.textContent = '+';
+  addSw.title = 'Elegir un color nuevo';
+  grid.appendChild(addSw);
+
+  const nativeInput = document.createElement('input');
+  nativeInput.type = 'color';
+  nativeInput.style.display = 'none';
+  nativeInput.value = currentColor || '#E8A79A';
+  grid.appendChild(nativeInput);
+
+  addSw.onclick = ()=> nativeInput.click();
+  nativeInput.onchange = ()=>{
+    const hex = nativeInput.value;
+    let palette = state.customWeekColors.filter(c=> c!==hex);
+    palette.unshift(hex);
+    if(palette.length>4) palette = palette.slice(0,4);
+    state.customWeekColors = palette;
+    save();
+    close();
+    onPick(hex);
+  };
 
   overlay.style.display = 'flex';
   document.getElementById('weekColorCancel').onclick = close;
