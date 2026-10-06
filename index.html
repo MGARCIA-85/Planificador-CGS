@@ -1503,7 +1503,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v99';
+const APP_VERSION = 'v100';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -3195,6 +3195,7 @@ function renderTickets(){
         row.querySelector('.slot-remove').onclick = (e)=>{
           e.stopPropagation();
           day.clientSlots[i] = null;
+          delete week.slotMarks[copyKey];
           if(expandedDetail && expandedDetail.dayId===day.id && expandedDetail.slotIndex===i) expandedDetail = null;
           save();
           renderTickets();
