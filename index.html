@@ -79,6 +79,9 @@
     font-weight:600;
     white-space:nowrap;
   }
+  .reorder-toggle-btn:disabled{
+    opacity:0.3;
+  }
   .reorder-toggle-btn.active{
     background:var(--accent);
     border-color:var(--accent);
@@ -1219,6 +1222,8 @@
       <div class="sub" id="monthLabel">Cargando...</div>
     </div>
     <div class="app-header-actions">
+      <button id="undoBtn" class="reorder-toggle-btn" title="Deshacer" disabled>↶</button>
+      <button id="redoBtn" class="reorder-toggle-btn" title="Rehacer" disabled>↷</button>
       <button id="toggleUnscheduledBtn" class="reorder-toggle-btn">◂ Contraer</button>
       <button id="toggleReorderBtn" class="reorder-toggle-btn">☰ Mover</button>
       <button id="toggleFilterBtn" class="reorder-toggle-btn">Filtro ▾</button>
@@ -1498,7 +1503,7 @@
 const LS_CLIENTES = 'pcgs_clientes';
 const LS_MESES = 'pcgs_meses';
 const LS_PRIORITY_ORDER = 'pcgs_priority_order';
-const APP_VERSION = 'v98';
+const APP_VERSION = 'v99';
 const SLOTS_PER_DAY = 10;
 const DAYS_PER_SEMANA = 5;
 const WEEKDAY_LABELS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
@@ -1669,7 +1674,64 @@ function save(){
   localStorage.setItem(LS_PRIORITY_ORDER, JSON.stringify(state.priorityOrder));
   localStorage.setItem(LS_PRIORITY_COLORS, JSON.stringify(state.priorityColors));
   localStorage.setItem(LS_CUSTOM_WEEK_COLORS, JSON.stringify(state.customWeekColors));
+  if(typeof captureUndoSnapshot==='function') captureUndoSnapshot();
   if(typeof scheduleDriveAutoBackup==='function') scheduleDriveAutoBackup();
+}
+
+/* ---------- Deshacer / Rehacer ---------- */
+let undoStack = [];
+let redoStack = [];
+let lastMesesSnapshot = null;
+const UNDO_LIMIT = 20;
+
+function captureUndoSnapshot(){
+  const current = JSON.stringify(state.meses);
+  if(lastMesesSnapshot !== null && lastMesesSnapshot !== current){
+    undoStack.push(lastMesesSnapshot);
+    if(undoStack.length > UNDO_LIMIT) undoStack.shift();
+    redoStack = [];
+  }
+  lastMesesSnapshot = current;
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons(){
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  if(undoBtn) undoBtn.disabled = undoStack.length===0;
+  if(redoBtn) redoBtn.disabled = redoStack.length===0;
+}
+
+function performUndo(){
+  if(undoStack.length===0) return;
+  const current = JSON.stringify(state.meses);
+  redoStack.push(current);
+  const prev = undoStack.pop();
+  state.meses = JSON.parse(prev);
+  lastMesesSnapshot = prev;
+  localStorage.setItem(LS_MESES, prev);
+  closeSlotPicker();
+  renderWeekStrip();
+  renderTickets();
+  renderCalendarView();
+  updateUndoRedoButtons();
+  toast('Acción deshecha');
+}
+
+function performRedo(){
+  if(redoStack.length===0) return;
+  const current = JSON.stringify(state.meses);
+  undoStack.push(current);
+  const next = redoStack.pop();
+  state.meses = JSON.parse(next);
+  lastMesesSnapshot = next;
+  localStorage.setItem(LS_MESES, next);
+  closeSlotPicker();
+  renderWeekStrip();
+  renderTickets();
+  renderCalendarView();
+  updateUndoRedoButtons();
+  toast('Acción rehecha');
 }
 
 function load(){
@@ -2227,6 +2289,17 @@ function groupHeaderColor(key){
   return rutaColor(key);
 }
 
+function getDayMarksArray(week, day){
+  return day.clientSlots.map((_, i)=> week.slotMarks[day.id+':'+i] || null);
+}
+function setDayMarksArray(week, day, marksArr){
+  for(let i=0;i<marksArr.length;i++){
+    const key = day.id+':'+i;
+    if(marksArr[i]) week.slotMarks[key] = marksArr[i];
+    else delete week.slotMarks[key];
+  }
+}
+
 function assignedClientIdsThisWeek(){
   const ids = new Set();
   currentWeek().days.forEach(d=> { if(d) d.clientSlots.forEach(id => { if(id) ids.add(id); }); });
@@ -2377,6 +2450,9 @@ function setReorderMode(active){
   renderWeekStrip();
   renderTickets();
 }
+
+document.getElementById('undoBtn').onclick = performUndo;
+document.getElementById('redoBtn').onclick = performRedo;
 
 document.getElementById('toggleReorderBtn').onclick = ()=>{
   setReorderMode(!reorderModeActive);
@@ -3173,23 +3249,34 @@ function renderTickets(){
           if(sourceDayId===destDayId){
             if(evt.oldIndex===evt.newIndex) return;
             const arr = day.clientSlots;
+            const marksArr = getDayMarksArray(week, day);
             const moved = arr.splice(evt.oldIndex,1)[0];
             arr.splice(evt.newIndex,0,moved);
+            const movedMark = marksArr.splice(evt.oldIndex,1)[0];
+            marksArr.splice(evt.newIndex,0,movedMark);
+            setDayMarksArray(week, day, marksArr);
           } else {
             const sourceDay = week.days.find(d=> d && d.id===sourceDayId);
             const destDay = week.days.find(d=> d && d.id===destDayId);
             if(!sourceDay || !destDay) return;
+            const sourceMarksArr = getDayMarksArray(week, sourceDay);
+            const destMarksArr = getDayMarksArray(week, destDay);
             const moved = sourceDay.clientSlots.splice(evt.oldIndex,1)[0];
+            const movedMark = sourceMarksArr.splice(evt.oldIndex,1)[0];
             sourceDay.clientSlots.push(null);
+            sourceMarksArr.push(null);
             destDay.clientSlots.splice(evt.newIndex,0,moved);
+            destMarksArr.splice(evt.newIndex,0,movedMark);
             if(destDay.clientSlots.length>SLOTS_PER_DAY){
               let nullIdx = -1;
               for(let k=destDay.clientSlots.length-1;k>=0;k--){
                 if(destDay.clientSlots[k]===null && k!==evt.newIndex){ nullIdx = k; break; }
               }
-              if(nullIdx!==-1) destDay.clientSlots.splice(nullIdx,1);
-              else destDay.clientSlots.pop();
+              if(nullIdx!==-1){ destDay.clientSlots.splice(nullIdx,1); destMarksArr.splice(nullIdx,1); }
+              else { destDay.clientSlots.pop(); destMarksArr.pop(); }
             }
+            setDayMarksArray(week, sourceDay, sourceMarksArr);
+            setDayMarksArray(week, destDay, destMarksArr);
             expandedDetail = null;
           }
           save();
@@ -4399,11 +4486,13 @@ document.getElementById('sortSelect').addEventListener('change', (e)=>{
 
 /* ---------- init ---------- */
 load();
+lastMesesSnapshot = JSON.stringify(state.meses);
 selectCurrentRealMonth();
 renderHeader();
 renderWeekStrip();
 renderClientesView();
 renderTickets();
+updateUndoRedoButtons();
 document.getElementById('toggleUnscheduledBtn').style.display = 'none';
 document.getElementById('toggleFilterBtn').style.display = 'none';
 
